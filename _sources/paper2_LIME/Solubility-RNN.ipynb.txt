@@ -1,0 +1,823 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# LIME paper: Recurrent Neural Network for Solubility Prediciton"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Import packages and set up RNN"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import matplotlib.pyplot as plt\n",
+    "import matplotlib as mpl\n",
+    "import numpy as np\n",
+    "import tensorflow as tf\n",
+    "import selfies as sf\n",
+    "import exmol\n",
+    "from dataclasses import dataclass\n",
+    "from rdkit.Chem.Draw import rdDepictor, MolsToGridImage\n",
+    "from rdkit.Chem import MolFromSmiles\n",
+    "import random\n",
+    "rdDepictor.SetPreferCoordGen(True)\n",
+    "import matplotlib.pyplot as plt\n",
+    "import matplotlib.font_manager as font_manager\n",
+    "import urllib.request\n",
+    "\n",
+    "urllib.request.urlretrieve(\n",
+    "    \"https://github.com/google/fonts/raw/main/ofl/ibmplexmono/IBMPlexMono-Regular.ttf\",\n",
+    "    \"IBMPlexMono-Regular.ttf\",\n",
+    ")\n",
+    "fe = font_manager.FontEntry(fname=\"IBMPlexMono-Regular.ttf\", name=\"plexmono\")\n",
+    "font_manager.fontManager.ttflist.append(fe)\n",
+    "plt.rcParams.update(\n",
+    "    {\n",
+    "        \"axes.facecolor\": \"#f5f4e9\",\n",
+    "        \"grid.color\": \"#AAAAAA\",\n",
+    "        \"axes.edgecolor\": \"#333333\",\n",
+    "        \"figure.facecolor\": \"#FFFFFF\",\n",
+    "        \"axes.grid\": False,\n",
+    "        \"axes.prop_cycle\": plt.cycler(\"color\", plt.cm.Dark2.colors),\n",
+    "        \"font.family\": fe.name,\n",
+    "        \"figure.figsize\": (3.5, 3.5 / 1.2),\n",
+    "        \"ytick.left\": True,\n",
+    "        \"xtick.bottom\": True,\n",
+    "    }\n",
+    ")\n",
+    "mpl.rcParams[\"font.size\"] = 12\n",
+    "soldata = pd.read_csv(\n",
+    "    \"https://github.com/whitead/dmol-book/raw/main/data/curated-solubility-dataset.csv\"\n",
+    ")\n",
+    "\n",
+    "features_start_at = list(soldata.columns).index(\"MolWt\")\n",
+    "np.random.seed(0)\n",
+    "random.seed(0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# scramble them\n",
+    "soldata = soldata.sample(frac=0.01, random_state=0).reset_index(drop=True)\n",
+    "soldata.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from rdkit.Chem import MolToSmiles\n",
+    "\n",
+    "\n",
+    "def _randomize_smiles(mol, isomericSmiles=True):\n",
+    "    return MolToSmiles(\n",
+    "        mol,\n",
+    "        canonical=False,\n",
+    "        doRandom=True,\n",
+    "        isomericSmiles=isomericSmiles,\n",
+    "        kekuleSmiles=random.random() < 0.5,\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "smiles = list(soldata[\"SMILES\"])\n",
+    "solubilities = list(soldata[\"Solubility\"])\n",
+    "\n",
+    "aug_data = 10\n",
+    "\n",
+    "\n",
+    "def largest_mol(smiles):\n",
+    "    ss = smiles.split(\".\")\n",
+    "    ss.sort(key=lambda a: len(a))\n",
+    "    return ss[-1]\n",
+    "\n",
+    "\n",
+    "aug_smiles = []\n",
+    "aug_solubilities = []\n",
+    "for sml, sol in zip(smiles, solubilities):\n",
+    "    sml = largest_mol(sml)\n",
+    "    if len(sml) <= 4:\n",
+    "        continue  # ion or metal\n",
+    "    new_smls = []\n",
+    "    new_smls.append(sml)\n",
+    "    aug_solubilities.append(sol)\n",
+    "    for _ in range(aug_data):\n",
+    "        try:\n",
+    "            new_sml = _randomize_smiles(MolFromSmiles(sml))\n",
+    "            if new_sml not in new_smls:\n",
+    "                new_smls.append(new_sml)\n",
+    "                aug_solubilities.append(sol)\n",
+    "        except:\n",
+    "            continue\n",
+    "    aug_smiles.extend(new_smls)\n",
+    "\n",
+    "aug_df_AqSolDB = pd.DataFrame(\n",
+    "    data={\"SMILES\": aug_smiles, \"Solubility\": aug_solubilities}\n",
+    ")\n",
+    "\n",
+    "print(f\"The dataset was augmented from {len(soldata)} to {len(aug_df_AqSolDB)}.\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "selfies_list = []\n",
+    "for s in aug_df_AqSolDB.SMILES:\n",
+    "    try:\n",
+    "        selfies_list.append(sf.encoder(exmol.sanitize_smiles(s)[1]))\n",
+    "    except sf.EncoderError:\n",
+    "        selfies_list.append(None)\n",
+    "len(selfies_list)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "basic = set(exmol.get_basic_alphabet())\n",
+    "data_vocab = set(\n",
+    "    sf.get_alphabet_from_selfies([s for s in selfies_list if s is not None])\n",
+    ")\n",
+    "vocab = [\"[nop]\"]\n",
+    "vocab.extend(list(data_vocab.union(basic)))\n",
+    "vocab_stoi = {o: i for o, i in zip(vocab, range(len(vocab)))}\n",
+    "\n",
+    "\n",
+    "def selfies2ints(s):\n",
+    "    result = []\n",
+    "    for token in sf.split_selfies(s):\n",
+    "        if token in vocab_stoi:\n",
+    "            result.append(vocab_stoi[token])\n",
+    "        else:\n",
+    "            result.append(np.nan)\n",
+    "            # print('Warning')\n",
+    "    return result\n",
+    "\n",
+    "\n",
+    "def ints2selfies(v):\n",
+    "    return \"\".join([vocab[i] for i in v])\n",
+    "\n",
+    "\n",
+    "# test them out\n",
+    "s = selfies_list[0]\n",
+    "print(\"selfies:\", s)\n",
+    "v = selfies2ints(s)\n",
+    "print(\"selfies2ints:\", v)\n",
+    "so = ints2selfies(v)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# creating an object\n",
+    "@dataclass\n",
+    "class Config:\n",
+    "    vocab_size: int\n",
+    "    example_number: int\n",
+    "    batch_size: int\n",
+    "    buffer_size: int\n",
+    "    embedding_dim: int\n",
+    "    rnn_units: int\n",
+    "    hidden_dim: int\n",
+    "    drop_rate: float\n",
+    "\n",
+    "\n",
+    "config = Config(\n",
+    "    vocab_size=len(vocab),\n",
+    "    example_number=len(selfies_list),\n",
+    "    batch_size=128,\n",
+    "    buffer_size=10000,\n",
+    "    embedding_dim=64,\n",
+    "    hidden_dim=32,\n",
+    "    rnn_units=64,\n",
+    "    drop_rate=0.20,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# now get sequences\n",
+    "encoded = [selfies2ints(s) for s in selfies_list if s is not None]\n",
+    "# check for non-Nones\n",
+    "dsolubilities = aug_df_AqSolDB.Solubility.values[[s is not None for s in selfies_list]]\n",
+    "padded_seqs = tf.keras.preprocessing.sequence.pad_sequences(encoded, padding=\"post\")\n",
+    "\n",
+    "# Should be shuffled from the beginning, so no worries\n",
+    "N = len(padded_seqs)\n",
+    "split = int(0.1 * N)\n",
+    "\n",
+    "# Now build dataset\n",
+    "test_data = tf.data.Dataset.from_tensor_slices(\n",
+    "    (padded_seqs[:split], dsolubilities[:split])\n",
+    ").batch(config.batch_size)\n",
+    "\n",
+    "nontest = tf.data.Dataset.from_tensor_slices(\n",
+    "    (\n",
+    "        padded_seqs[split:],\n",
+    "        dsolubilities[split:],\n",
+    "    )\n",
+    ")\n",
+    "val_data, train_data = nontest.take(split).batch(config.batch_size), nontest.skip(\n",
+    "    split\n",
+    ").shuffle(config.buffer_size).batch(config.batch_size).prefetch(\n",
+    "    tf.data.experimental.AUTOTUNE\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model = tf.keras.Sequential()\n",
+    "\n",
+    "# make embedding and indicate that 0 should be treated as padding mask\n",
+    "model.add(\n",
+    "    tf.keras.layers.Embedding(\n",
+    "        input_dim=config.vocab_size, output_dim=config.embedding_dim, mask_zero=True\n",
+    "    )\n",
+    ")\n",
+    "model.add(tf.keras.layers.Dropout(config.drop_rate))\n",
+    "# RNN layer\n",
+    "model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(config.rnn_units)))\n",
+    "model.add(tf.keras.layers.Dropout(config.drop_rate))\n",
+    "# a dense hidden layer\n",
+    "model.add(tf.keras.layers.Dense(config.hidden_dim, activation=\"relu\"))\n",
+    "model.add(tf.keras.layers.Dropout(config.drop_rate))\n",
+    "# regression, so no activation\n",
+    "model.add(tf.keras.layers.Dense(1))\n",
+    "\n",
+    "model.summary()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model.compile(tf.optimizers.Adam(1e-3), loss=\"mean_squared_error\")\n",
+    "# verbose=0 silences output, to get progress bar set verbose=1\n",
+    "result = model.fit(train_data, validation_data=val_data, epochs=50)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model.save(\"solubility-rnn-accurate.keras\")\n",
+    "# model = tf.keras.models.load_model('solubility-rnn-accurate.keras')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(5, 3.5))\n",
+    "plt.plot(result.history[\"loss\"], label=\"training\")\n",
+    "plt.plot(result.history[\"val_loss\"], label=\"validation\")\n",
+    "plt.legend()\n",
+    "plt.xlabel(\"Epoch\")\n",
+    "plt.ylabel(\"Loss\")\n",
+    "plt.savefig(\"rnn-loss.png\", bbox_inches=\"tight\", dpi=300)\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "yhat = []\n",
+    "test_y = []\n",
+    "for x, y in test_data:\n",
+    "    yhat.extend(model(x).numpy().flatten())\n",
+    "    test_y.extend(y.numpy().flatten())\n",
+    "yhat = np.array(yhat)\n",
+    "test_y = np.array(test_y)\n",
+    "\n",
+    "# plot test data\n",
+    "plt.figure(figsize=(5, 3.5))\n",
+    "plt.plot(test_y, test_y, \":\")\n",
+    "plt.plot(test_y, yhat, \".\")\n",
+    "plt.text(\n",
+    "    max(test_y) - 6,\n",
+    "    min(test_y) + 1,\n",
+    "    f\"correlation = {np.corrcoef(test_y, yhat)[0,1]:.3f}\",\n",
+    ")\n",
+    "plt.text(\n",
+    "    max(test_y) - 6, min(test_y), f\"loss = {np.sqrt(np.mean((test_y - yhat)**2)):.3f}\"\n",
+    ")\n",
+    "plt.xlabel(r\"$y$\")\n",
+    "plt.ylabel(r\"$\\hat{y}$\")\n",
+    "plt.title(\"Testing Data\")\n",
+    "plt.savefig(\"rnn-fit.png\", dpi=300, bbox_inches=\"tight\")\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## LIME explanations\n",
+    "\n",
+    "In the following example, we find out what descriptors influence solubility of a molecules. For example, let's say we have a molecule with LogS=1.5. We create a perturbed chemical space around that molecule using `stoned` method and then use `lime` to find out which descriptors affect solubility predictions for that molecule. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Wrapper function for RNN, to use in STONED"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Predictor function is used as input to sample_space function\n",
+    "def predictor_function(smile_list, selfies):\n",
+    "    encoded = [selfies2ints(s) for s in selfies]\n",
+    "    # check for nans\n",
+    "    valid = [1.0 if sum(e) > 0 else np.nan for e in encoded]\n",
+    "    encoded = [np.nan_to_num(e, nan=0) for e in encoded]\n",
+    "    padded_seqs = tf.keras.preprocessing.sequence.pad_sequences(encoded, padding=\"post\")\n",
+    "    labels = np.reshape(model(padded_seqs, training=False), (-1))\n",
+    "    return labels * valid"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Descriptor explanations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Make sure SMILES doesn't contain multiple fragments\n",
+    "smi = \"CCCCC(=O)N(CC1=CC=C(C=C1)C2=C(C=CC=C2)C3=NN=N[NH]3)C(C(C)C)C(O)=O\"  # mol1 - not soluble\n",
+    "# smi = \"CC(CC(=O)NC1=CC=CC=C1)C(=O)O\" #mol2 - highly soluble\n",
+    "af = exmol.get_basic_alphabet()\n",
+    "stoned_kwargs = {\n",
+    "    \"num_samples\": 5000,\n",
+    "    \"alphabet\": af,\n",
+    "    \"max_mutations\": 2,\n",
+    "}\n",
+    "space = exmol.sample_space(\n",
+    "    smi, predictor_function, stoned_kwargs=stoned_kwargs, quiet=True\n",
+    ")\n",
+    "print(len(space))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from IPython.display import display, SVG\n",
+    "\n",
+    "desc_type = [\"Classic\", \"ecfp\", \"maccs\"]\n",
+    "\n",
+    "for d in desc_type:\n",
+    "    beta = exmol.lime_explain(space, descriptor_type=d)\n",
+    "    if d == \"ecfp\":\n",
+    "        display(\n",
+    "            SVG(\n",
+    "                exmol.plot_descriptors(\n",
+    "                    space, output_file=f\"{d}_mol2.svg\", return_svg=True\n",
+    "                )\n",
+    "            )\n",
+    "        )\n",
+    "        plt.close()\n",
+    "    else:\n",
+    "        exmol.plot_descriptors(space, output_file=f\"{d}_mol2.svg\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Text explanations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "exmol.lime_explain(space, \"ecfp\")\n",
+    "s1_ecfp = exmol.text_explain(space, \"ecfp\")\n",
+    "explanation = exmol.text_explain_generate(s1_ecfp, \"aqueous solubility\")\n",
+    "print(explanation)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Similarity map"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "beta = exmol.lime_explain(space, \"ecfp\")\n",
+    "svg = exmol.plot_utils.similarity_map_using_tstats(space[0], return_svg=True)\n",
+    "display(SVG(svg))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Write figure to file\n",
+    "with open(\"ecfp_similarity_map_mol2.svg\", \"w\") as f:\n",
+    "    f.write(svg)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Inspect space\n",
+    "MolsToGridImage(\n",
+    "    [MolFromSmiles(m.smiles) for m in space],\n",
+    "    legends=[f\"yhat = {m.yhat:.3}\" for m in space],\n",
+    "    molsPerRow=10,\n",
+    "    maxMols=100,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### How's the fit?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "fkw = {\"figsize\": (6, 4)}\n",
+    "font = {\"family\": \"normal\", \"weight\": \"normal\", \"size\": 16}\n",
+    "\n",
+    "fig = plt.figure(figsize=(10, 5))\n",
+    "mpl.rc(\"axes\", titlesize=12)\n",
+    "mpl.rc(\"font\", size=16)\n",
+    "ax_dict = fig.subplot_mosaic(\"AABBB\")\n",
+    "\n",
+    "# Plot space by fit\n",
+    "svg = exmol.plot_utils.plot_space_by_fit(\n",
+    "    space,\n",
+    "    [space[0]],\n",
+    "    figure_kwargs=fkw,\n",
+    "    mol_size=(200, 200),\n",
+    "    offset=1,\n",
+    "    ax=ax_dict[\"B\"],\n",
+    "    beta=beta,\n",
+    ")\n",
+    "# Compute y_wls\n",
+    "w = np.array([1 / (1 + (1 / (e.similarity + 0.000001) - 1) ** 5) for e in space])\n",
+    "non_zero = w > 10 ** (-6)\n",
+    "w = w[non_zero]\n",
+    "N = w.shape[0]\n",
+    "\n",
+    "ys = np.array([e.yhat for e in space])[non_zero].reshape(N).astype(float)\n",
+    "x_mat = np.array([list(e.descriptors.descriptors) for e in space])[non_zero].reshape(\n",
+    "    N, -1\n",
+    ")\n",
+    "y_wls = x_mat @ beta\n",
+    "y_wls += np.mean(ys)\n",
+    "\n",
+    "lower = np.min(ys)\n",
+    "higher = np.max(ys)\n",
+    "\n",
+    "# set transparency using w\n",
+    "norm = plt.Normalize(min(w), max(w))\n",
+    "cmap = plt.cm.Oranges(w)\n",
+    "cmap[:, -1] = w\n",
+    "\n",
+    "\n",
+    "def weighted_mean(x, w):\n",
+    "    return np.sum(x * w) / np.sum(w)\n",
+    "\n",
+    "\n",
+    "def weighted_cov(x, y, w):\n",
+    "    return np.sum(w * (x - weighted_mean(x, w)) * (y - weighted_mean(y, w))) / np.sum(w)\n",
+    "\n",
+    "\n",
+    "def weighted_correlation(x, y, w):\n",
+    "    return weighted_cov(x, y, w) / np.sqrt(\n",
+    "        weighted_cov(x, x, w) * weighted_cov(y, y, w)\n",
+    "    )\n",
+    "\n",
+    "\n",
+    "corr = weighted_correlation(ys, y_wls, w)\n",
+    "\n",
+    "ax_dict[\"A\"].plot(\n",
+    "    np.linspace(lower, higher, 100), np.linspace(lower, higher, 100), \"--\", linewidth=2\n",
+    ")\n",
+    "sc = ax_dict[\"A\"].scatter(ys, y_wls, s=50, marker=\".\", c=cmap, cmap=cmap)\n",
+    "ax_dict[\"A\"].text(max(ys) - 3, min(ys) + 1, f\"weighted \\ncorrelation = {corr:.3f}\")\n",
+    "ax_dict[\"A\"].set_xlabel(r\"$\\hat{y}$\")\n",
+    "ax_dict[\"A\"].set_ylabel(r\"$g$\")\n",
+    "ax_dict[\"A\"].set_title(\"Weighted Least Squares Fit\")\n",
+    "ax_dict[\"A\"].set_xlim(lower, higher)\n",
+    "ax_dict[\"A\"].set_ylim(lower, higher)\n",
+    "ax_dict[\"A\"].set_aspect(1.0 / ax_dict[\"A\"].get_data_ratio(), adjustable=\"box\")\n",
+    "sm = plt.cm.ScalarMappable(cmap=plt.cm.Oranges, norm=norm)\n",
+    "cbar = plt.colorbar(sm, orientation=\"horizontal\", pad=0.15, ax=ax_dict[\"A\"])\n",
+    "cbar.set_label(\"Chemical similarity\")\n",
+    "plt.tight_layout()\n",
+    "plt.savefig(\"weighted_fit.svg\", dpi=300, bbox_inches=\"tight\", transparent=False)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Robustness to incomplete sampling\n",
+    "\n",
+    "We first sample a reference chemical space, and then subsample smaller chemical spaces from this reference. Rank correlation is computed between important descriptors for the smaller subspaces and the reference space."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Sample a big space\n",
+    "stoned_kwargs = {\n",
+    "    \"num_samples\": 5000,\n",
+    "    \"alphabet\": exmol.get_basic_alphabet(),\n",
+    "    \"max_mutations\": 2,\n",
+    "}\n",
+    "space = exmol.sample_space(\n",
+    "    smi, predictor_function, stoned_kwargs=stoned_kwargs, quiet=True\n",
+    ")\n",
+    "len(space)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# get descriptor attributions\n",
+    "exmol.lime_explain(space, \"MACCS\", return_beta=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Assign feature ids for rank comparison\n",
+    "features = features = {\n",
+    "    a: b\n",
+    "    for a, b in zip(\n",
+    "        space[0].descriptors.descriptor_names,\n",
+    "        np.arange(len(space[0].descriptors.descriptors)),\n",
+    "    )\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Get set of ranks for the reference space\n",
+    "baseline_imp = {\n",
+    "    a: b\n",
+    "    for a, b in zip(space[0].descriptors.descriptor_names, space[0].descriptors.tstats)\n",
+    "    if not np.isnan(b)\n",
+    "}\n",
+    "baseline_imp = dict(\n",
+    "    sorted(baseline_imp.items(), key=lambda item: abs(item[1]), reverse=True)\n",
+    ")\n",
+    "baseline_set = [features[x] for x in baseline_imp.keys()]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Get subsets and calculate lime importances - subsample - get rank correlation\n",
+    "from scipy.stats import spearmanr\n",
+    "\n",
+    "plt.figure(figsize=(4, 3))\n",
+    "N = len(space)\n",
+    "size = np.arange(500, N, 1000)\n",
+    "rank_corr = {N: 1}\n",
+    "for i, f in enumerate(size):\n",
+    "    # subsample space\n",
+    "    rank_corr[f] = []\n",
+    "    for _ in range(10):\n",
+    "        # subsample space of size f\n",
+    "        idx = np.random.choice(np.arange(N), size=f, replace=False)\n",
+    "        subspace = [space[i] for i in idx]\n",
+    "        # get desc attributions\n",
+    "        ss_beta = exmol.lime_explain(subspace, descriptor_type=\"MACCS\")\n",
+    "        ss_imp = {\n",
+    "            a: b\n",
+    "            for a, b in zip(\n",
+    "                subspace[0].descriptors.descriptor_names, subspace[0].descriptors.tstats\n",
+    "            )\n",
+    "            if not np.isnan(b)\n",
+    "        }\n",
+    "        ss_imp = dict(\n",
+    "            sorted(ss_imp.items(), key=lambda item: abs(item[1]), reverse=True)\n",
+    "        )\n",
+    "        ss_set = [features[x] for x in ss_imp.keys()]\n",
+    "        # Get ranks for subsampled space and compare with reference\n",
+    "        ranks = {a: [b] for a, b in zip(baseline_set[:5], np.arange(1, 6))}\n",
+    "        for j, s in enumerate(ss_set):\n",
+    "            if s in ranks:\n",
+    "                ranks[s].append(j + 1)\n",
+    "        # compute rank correlation\n",
+    "        r = spearmanr(np.arange(1, 6), [ranks[x][1] for x in ranks])\n",
+    "        rank_corr[f].append(r.correlation)\n",
+    "\n",
+    "    plt.scatter(f, np.mean(rank_corr[f]), color=\"#13254a\", marker=\"o\")\n",
+    "\n",
+    "plt.scatter(N, 1.0, color=\"red\", marker=\"o\")\n",
+    "plt.axvline(x=N, linestyle=\":\", color=\"red\")\n",
+    "plt.xlabel(\"Size of chemical space\")\n",
+    "plt.ylabel(\"Rank correlation\")\n",
+    "plt.tight_layout()\n",
+    "plt.savefig(\"rank correlation.svg\", dpi=300, bbox_inches=\"tight\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Effect of mutation number, alphabet and size of chemical space"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Mutation\n",
+    "desc_type = [\"Classic\"]\n",
+    "muts = [1, 2, 3]\n",
+    "for i in muts:\n",
+    "    stoned_kwargs = {\n",
+    "        \"num_samples\": 2500,\n",
+    "        \"alphabet\": exmol.get_basic_alphabet(),\n",
+    "        \"min_mutations\": i,\n",
+    "        \"max_mutations\": i,\n",
+    "    }\n",
+    "    space = exmol.sample_space(\n",
+    "        smi, predictor_function, stoned_kwargs=stoned_kwargs, quiet=True\n",
+    "    )\n",
+    "    for d in desc_type:\n",
+    "        exmol.lime_explain(space, descriptor_type=d)\n",
+    "        exmol.plot_descriptors(space, title=f\"Mutations={i}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Alphabet\n",
+    "basic = exmol.get_basic_alphabet()\n",
+    "train = sf.get_alphabet_from_selfies([s for s in selfies_list if s is not None])\n",
+    "wide = sf.get_semantic_robust_alphabet()\n",
+    "desc_type = [\"MACCS\"]\n",
+    "alphs = {\"Basic\": basic, \"Training Data\": train, \"SELFIES\": wide}\n",
+    "for a in alphs:\n",
+    "    stoned_kwargs = {\"num_samples\": 2500, \"alphabet\": alphs[a], \"max_mutations\": 2}\n",
+    "    space = exmol.sample_space(\n",
+    "        smi, predictor_function, stoned_kwargs=stoned_kwargs, quiet=True\n",
+    "    )\n",
+    "    for d in desc_type:\n",
+    "        exmol.lime_explain(space, descriptor_type=d)\n",
+    "        exmol.plot_descriptors(space, title=f\"Alphabet: {a}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Size of space\n",
+    "desc_type = [\"MACCS\"]\n",
+    "space_size = [1500, 2000, 2500]\n",
+    "for s in space_size:\n",
+    "    stoned_kwargs = {\n",
+    "        \"num_samples\": s,\n",
+    "        \"alphabet\": exmol.get_basic_alphabet(),\n",
+    "        \"max_mutations\": 2,\n",
+    "    }\n",
+    "    space = exmol.sample_space(\n",
+    "        smi, predictor_function, stoned_kwargs=stoned_kwargs, quiet=True\n",
+    "    )\n",
+    "    for d in desc_type:\n",
+    "        exmol.lime_explain(space, descriptor_type=d)\n",
+    "        exmol.plot_descriptors(\n",
+    "            space,\n",
+    "            title=f\"Chemical space size={s}\",\n",
+    "        )"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.11"
+  },
+  "vscode": {
+   "interpreter": {
+    "hash": "3e5a039a7a113538395a7d74f5574b0c5900118222149a18efb009bf03645fce"
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

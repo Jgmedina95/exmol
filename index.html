@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started &mdash; exmol  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Change Log" href="changelog.html" />
+    <link rel="prev" title="exmol" href="toc.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="toc.html" class="icon icon-home">
+            exmol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#counterfactual-generation">Counterfactual Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#descriptor-attribution">Descriptor Attribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#further-examples">Further Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#chemical-space">Chemical Space</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#svg">SVG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#disable-progress-bars">Disable Progress Bars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-and-docs">API and Docs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#developing">Developing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#citation">Citation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paper2_LIME/Tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paper1_CFs/Schematic.html">MMACE Paper: Counterfactual Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paper1_CFs/RF.html">MMACE Paper: Random Forest for Blood-Brain Barrier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paper1_CFs/GNN.html">MMACE Paper: Graph Neural Network for HIV Inhibition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paper1_CFs/Solubility-RNN.html">MMACE Paper: Recurrent Neural Network for Predicting Solubility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paper2_LIME/Solubility-RNN.html">LIME paper: Recurrent Neural Network for Solubility Prediciton</a></li>
+<li class="toctree-l1"><a class="reference internal" href="paper2_LIME/RF-lime.html">LIME paper: Random Forest for Solubility Prediciton</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="toc.html">exmol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="toc.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ur-whitelab/exmol/blob/main/docs/source/index.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
+<p><a class="reference external" href="https://github.com/ur-whitelab/exmol"><img alt="GitHub" src="https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&amp;logo=github&amp;logoColor=white" /></a>
+<a class="reference external" href="https://github.com/ur-whitelab/exmol"><img alt="tests" src="https://github.com/ur-whitelab/exmol/actions/workflows/tests.yml/badge.svg" /></a> <a class="reference external" href="https://github.com/ur-whitelab/exmol"><img alt="paper" src="https://github.com/ur-whitelab/exmol/actions/workflows/paper.yml/badge.svg" /></a> <a class="reference external" href="https://ur-whitelab.github.io/exmol/"><img alt="docs" src="https://github.com/ur-whitelab/exmol/actions/workflows/docs.yml/badge.svg" /></a>
+<a class="reference external" href="https://badge.fury.io/py/exmol"><img alt="PyPI version" src="https://badge.fury.io/py/exmol.svg" /></a>
+<a class="reference external" href="https://lbesson.mit-license.org/"><img alt="MIT license" src="https://img.shields.io/badge/License-MIT-blue.svg" /></a></p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#explaining-why-that-molecule"><span class="xref myst">Explaining why that molecule</span></a></p>
+<ul>
+<li><p><a class="reference internal" href="#install"><span class="xref myst">Install</span></a></p></li>
+<li><p><a class="reference internal" href="#quickstart"><span class="xref myst">Quickstart</span></a></p></li>
+<li><p><a class="reference internal" href="#counterfactual-generation"><span class="xref myst">Counterfactual Generation</span></a></p></li>
+<li><p><a class="reference internal" href="#descriptor-attribution"><span class="xref myst">Descriptor Attribution</span></a></p></li>
+<li><p><a class="reference internal" href="#usage"><span class="xref myst">Usage</span></a></p></li>
+<li><p><a class="reference internal" href="#further-examples"><span class="xref myst">Further Examples</span></a></p></li>
+<li><p><a class="reference internal" href="#chemical-space"><span class="xref myst">Chemical Space</span></a></p></li>
+<li><p><a class="reference internal" href="#svg"><span class="xref myst">SVG</span></a></p></li>
+<li><p><a class="reference internal" href="#disable-progress-bars"><span class="xref myst">Disable Progress Bars</span></a></p></li>
+<li><p><a class="reference internal" href="#api-and-docs"><span class="xref myst">API and Docs</span></a></p></li>
+<li><p><a class="reference internal" href="#developing"><span class="xref myst">Developing</span></a></p></li>
+<li><p><a class="reference internal" href="#citation"><span class="xref myst">Citation</span></a></p></li>
+</ul>
+</li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">exmol</span></code> is a package to explain black-box predictions of molecules. The package uses model agnostic explanations to help users understand why a molecule is predicted to have a property.</p>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading"></a></h2>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>exmol
+</pre></div>
+</div>
+</section>
+<section id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h2>
+<p>See <a class="reference external" href="https://ur-whitelab.github.io/exmol/paper2_LIME/Tutorial.html">the tutorial</a> to give an overview of the basic usage of exmol.</p>
+</section>
+<section id="counterfactual-generation">
+<h2>Counterfactual Generation<a class="headerlink" href="#counterfactual-generation" title="Link to this heading"></a></h2>
+<p>Our package implements the Model Agnostic Counterfactual Compounds with STONED to generate counterfactuals.
+A counterfactual can explain a prediction by showing what would have to change in the molecule to change its predicted class. Here is an example of a counterfactual:</p>
+<blockquote>
+<div><p>This package is not popular. If the package had a logo, it would be popular.</p>
+</div></blockquote>
+<p>In addition to having a changed prediction, a molecular counterfactual must be similar to its base molecule as much as possible. Here is an example of a molecular counterfactual:</p>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper1_CFs/svg_figs/counterfactual.png"><img alt="counterfactual demo" src="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper1_CFs/svg_figs/counterfactual.png" style="width: 400px;" />
+</a>
+<p>The counterfactual shows that if the carboxylic acid were an ester, the molecule would be active. It is up to the user to translate this set of structures into a meaningful sentence.</p>
+</section>
+<section id="descriptor-attribution">
+<h2>Descriptor Attribution<a class="headerlink" href="#descriptor-attribution" title="Link to this heading"></a></h2>
+<p>This package also implements Model Agnostic Descriptor Attribution for molecules using LIME.
+Descriptor attributions can explain a prediction by computing QSARs for molecular structure properties independent of features used for model predictions. Here is an example of descriptor attribution:</p>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper2_LIME/descriptor.png"><img alt="descriptor demo" src="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper2_LIME/descriptor.png" style="width: 800px;" />
+</a>
+<p>The descriptor t-statistics show which chemical properties or substructures influence properety prediction for the pictured molecule. LIME is a perturbation based method and the descriptor attributions depend on the perturbed chemical space created around the molecule of interest.</p>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
+<p>Let’s assume you have a deep learning model <code class="docutils literal notranslate"><span class="pre">my_model(s)</span></code> that takes in one SMILES string and outputs a predicted binary class. We first expand chemical space around the prediction of interest</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">exmol</span>
+
+<span class="c1"># mol of interest</span>
+<span class="n">base</span> <span class="o">=</span> <span class="s1">&#39;Cc1onc(-c2ccccc2Cl)c1C(=O)NC1C(=O)N2C1SC(C)(C)C2C(=O)O&#39;</span>
+
+<span class="n">samples</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">sample_space</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">my_model</span><span class="p">,</span> <span class="n">batched</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We uses <code class="docutils literal notranslate"><span class="pre">batched=False</span></code> to indicate <code class="docutils literal notranslate"><span class="pre">my_model</span></code> cannot handle a batch of SMILES, just one at a time.  If your model takes SELFIES, just pass <code class="docutils literal notranslate"><span class="pre">use_selfies=True</span></code> to <code class="docutils literal notranslate"><span class="pre">sample_space</span></code>. Now we select counterfactuals from that space and plot them.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">cfs</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">cf_explain</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_cf</span><span class="p">(</span><span class="n">cfs</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper1_CFs/svg_figs/rf-simple.png"><img alt="set of counterfactuals" src="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper1_CFs/svg_figs/rf-simple.png" style="width: 500px;" />
+</a>
+<p>We can also plot the space around the counterfactual. This is computed via PCA of the affinity matrix – the similarity (Tanimoto of ECFP4) with the base molecule.
+Due to how similarity is calculated, the base is going to be the farthest from all other molecules. Thus your base should fall on the left (or right) extreme of your plot.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">cfs</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">cf_explain</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_space</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">cfs</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper1_CFs/svg_figs/rf-space.png"><img alt="chemical space" src="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper1_CFs/svg_figs/rf-space.png" style="width: 600px;" />
+</a>
+<p>Each counterfactual is a Python <code class="docutils literal notranslate"><span class="pre">dataclass</span></code> with information allowing it to be used in your own analysis:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">cfs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s1">&#39;smiles&#39;</span><span class="p">:</span> <span class="s1">&#39;Cc1onc(-c2ccccc2Cl)c1C(=O)NC1C(=O)N2C1SC(C)(C)C2C&#39;</span><span class="p">,</span>
+<span class="s1">&#39;selfies&#39;</span><span class="p">:</span> <span class="s1">&#39;[C][C][O][N][=C][Branch1_1][Branch2_3][C][=C][C][=C][C][=C][Ring1][Branch1_2][Cl][C]</span>
+            <span class="p">[</span><span class="n">Expl</span><span class="o">=</span><span class="n">Ring1</span><span class="p">][</span><span class="n">N</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">Branch1_2</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="o">=</span><span class="n">O</span><span class="p">][</span><span class="n">N</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">Branch1_2</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="o">=</span><span class="n">O</span><span class="p">][</span><span class="n">N</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">Ring1</span><span class="p">][</span><span class="n">Branch1_1</span><span class="p">][</span><span class="n">S</span><span class="p">][</span><span class="n">C</span><span class="p">]</span>
+            <span class="p">[</span><span class="n">Branch1_1</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">Branch1_1</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">Ring1</span><span class="p">][</span><span class="n">Branch1_3</span><span class="p">][</span><span class="n">C</span><span class="p">]</span><span class="s1">&#39;,</span>
+<span class="s1">&#39;similarity&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+<span class="s1">&#39;yhat&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="s1">&#39;index&#39;</span><span class="p">:</span> <span class="mi">1813</span><span class="p">,</span>
+<span class="s1">&#39;position&#39;</span><span class="p">:</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">7.8032394</span> <span class="p">,</span>  <span class="mf">0.51781263</span><span class="p">]),</span>
+<span class="s1">&#39;is_origin&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="s1">&#39;cluster&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+<span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="s1">&#39;Counterfactual 1&#39;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We can use the same chemical space to get descriptor attributions for the molecule. Along with <code class="docutils literal notranslate"><span class="pre">samples</span></code>, we also need to specify the <code class="docutils literal notranslate"><span class="pre">descriptor_type</span></code> to get attributions. You can select from <code class="docutils literal notranslate"><span class="pre">Classic</span></code> Rdkit descriptors, <code class="docutils literal notranslate"><span class="pre">MACCS</span></code> fingerprint descriptors, <code class="docutils literal notranslate"><span class="pre">ECFP</span></code> substructure descriptors. The default <code class="docutils literal notranslate"><span class="pre">descriptor_type</span></code> is <code class="docutils literal notranslate"><span class="pre">MACCS</span></code>. If you’d like to use regression coefficients for analysis, specify <code class="docutils literal notranslate"><span class="pre">return_beta=True</span></code>. The descriptor t-statistics are stored in <code class="docutils literal notranslate"><span class="pre">descriptors.tstats</span></code> attribute for the base molecule and can be accessed using <code class="docutils literal notranslate"><span class="pre">space_tstats</span> <span class="pre">=</span> <span class="pre">space[0].descriptors.tstats</span></code>. <code class="docutils literal notranslate"><span class="pre">plot_descriptors</span></code> saves a plot as shown below in the <code class="docutils literal notranslate"><span class="pre">output_file</span></code>.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">beta</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">lime_explain</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">descriptor_type</span><span class="o">=</span><span class="s1">&#39;ECFP&#39;</span><span class="p">,</span> <span class="n">return_beta</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_descriptors</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">output_file</span><span class="o">=</span><span class="s1">&#39;ecfp.svg&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper2_LIME/ECFP.svg"><img alt="ecfp descriptors" src="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper2_LIME/ECFP.svg" style="width: 400px;" />
+</a>
+<p>You can use a more typical atom attribution plot as well, although note that some information is lost in this representation.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">exmol</span><span class="o">.</span><span class="n">plot_utils</span><span class="o">.</span><span class="n">similarity_map_using_tstats</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<img alt="molecule attribution by coloring each atom" src="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper2_LIME/mol-attr.png" />
+<p>You can also plot the chemical space colored by fit to see how well the regression fits the original model. To plot by fit, regression coefficients <code class="docutils literal notranslate"><span class="pre">beta</span></code> need to be passed in as an argument.</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">exmol</span><span class="o">.</span><span class="n">plot_utils</span><span class="o">.</span><span class="n">plot_space_by_fit</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+    <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span>
+    <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">250</span><span class="p">),</span>
+    <span class="n">figure_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;figsize&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">)},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper2_LIME/space_by_fit.png"><img alt="chemical space by fit" src="https://raw.githubusercontent.com/ur-whitelab/exmol/main/paper2_LIME/space_by_fit.png" style="width: 500px;" />
+</a>
+<p>It is also possible to get global attributions for multiple base molecules. For this, the user should create a space around each instance of interest and concatenate these spaces. Then use this joint space to do lime explanations:</p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">beta</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">lime_explain</span><span class="p">(</span><span class="n">joint_space</span><span class="p">,</span> <span class="n">descriptor_type</span><span class="o">=</span><span class="s1">&#39;ECFP&#39;</span><span class="p">,</span> <span class="n">return_beta</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">multiple_bases</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">lime_explain()</span></code> uses a linear surrogate model for descriptor explanations. You can also use a custom surrogate model instead of a linear model. To do so, just add desired descriptors to the chemical space using the <code class="docutils literal notranslate"><span class="pre">add_descriptors()</span></code> function and then use a custom model on samples to get explanations. For example, add ECFP descriptors using <code class="docutils literal notranslate"><span class="pre">exmol.add_descriptors(samples,</span> <span class="pre">descriptor_type='ECFP')</span></code>.</p>
+</section>
+<section id="further-examples">
+<h2>Further Examples<a class="headerlink" href="#further-examples" title="Link to this heading"></a></h2>
+<p>You can find more examples by looking at the exact code used to generate all figures from our paper <a class="reference external" href="https://ur-whitelab.github.io/exmol/toc.html">in the docs webpage</a>.</p>
+</section>
+<section id="chemical-space">
+<h2>Chemical Space<a class="headerlink" href="#chemical-space" title="Link to this heading"></a></h2>
+<p>When calling <code class="docutils literal notranslate"><span class="pre">exmol.sample_space</span></code> you can pass <code class="docutils literal notranslate"><span class="pre">preset=&lt;preset&gt;</span></code>, which can be
+one of the following:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'narrow'</span></code>: Only one change to molecular structure, reduced set of possible bonds/elements</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'medium'</span></code>: Default. One or two changes to molecular structure, reduced set of possible bonds/elements</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'wide'</span></code>: One through five changes to molecular structure, large set of possible bonds/elements</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'chemed'</span></code>: A restricted set where only pubchem molecules are considered.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'custom'</span></code>: A restricted set where only molecules provided by the “data” key are considered.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'synspace'</span></code>: Chemical space is generated by running retro and forward synthesis reactions, so all generaterd molecules are synthetically feasible. Uses <a class="reference external" href="https://github.com/whitead/synspace">synspace</a> package.</p></li>
+</ul>
+<p>You can also pass <code class="docutils literal notranslate"><span class="pre">num_samples</span></code> as a “request” for number of samples. You will typically end up with less due to
+degenerate molecules. See API for complete description.</p>
+</section>
+<section id="svg">
+<h2>SVG<a class="headerlink" href="#svg" title="Link to this heading"></a></h2>
+<p>Molecules are by default drawn as PNGs. If you would like to have them drawn as SVGs, call <code class="docutils literal notranslate"><span class="pre">insert_svg</span></code> after calling
+<code class="docutils literal notranslate"><span class="pre">plot_space</span></code> or <code class="docutils literal notranslate"><span class="pre">plot_cf</span></code></p>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">skunk</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_cf</span><span class="p">(</span><span class="n">exps</span><span class="p">)</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">insert_svg</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">mol_fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+
+<span class="c1"># for Jupyter Notebook</span>
+<span class="n">skunk</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+
+<span class="c1"># To save to file</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;myplot.svg&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is done with the <a class="reference external" href="https://github.com/whitead/skunk">skunk🦨 library</a>.</p>
+</section>
+<section id="disable-progress-bars">
+<h2>Disable Progress Bars<a class="headerlink" href="#disable-progress-bars" title="Link to this heading"></a></h2>
+<p>If <code class="docutils literal notranslate"><span class="pre">exmol</span></code> is being too loud, add <code class="docutils literal notranslate"><span class="pre">quiet</span> <span class="pre">=</span> <span class="pre">True</span></code> to <code class="docutils literal notranslate"><span class="pre">sample_space</span></code> arguments.</p>
+</section>
+<section id="api-and-docs">
+<h2>API and Docs<a class="headerlink" href="#api-and-docs" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://ur-whitelab.github.io/exmol/api.html">Read API here</a>. You should also read the paper (see below) for a more exact
+description of the methods and implementation.</p>
+</section>
+<section id="developing">
+<h2>Developing<a class="headerlink" href="#developing" title="Link to this heading"></a></h2>
+<p>This repo uses pre-commit, so after cloning run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code> prior to committing.</p>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading"></a></h2>
+<p>For the counterfactual work, please cite <a class="reference external" href="https://pubs.rsc.org/en/content/articlelanding/2022/sc/d1sc05259d#!divAbstract">Wellawatte et al.</a></p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@article</span><span class="p">{</span><span class="nl">wellawatte2022model</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{Model agnostic generation of counterfactual explanations for molecules}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Wellawatte, Geemi P and Seshadri, Aditi and White, Andrew D}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">journal</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{Chemical Science}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">volume</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{13}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">number</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{13}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">pages</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{3697--3705}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">{2022}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">publisher</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Royal Society of Chemistry}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For the descriptor explanations, please cite <a class="reference external" href="https://doi.org/10.26434/chemrxiv-2022-v5p6m-v2">Gandhi et. al.</a></p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@article</span><span class="p">{</span><span class="nl">gandhi_white_2022</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{Explaining structure-activity relationships using locally faithful surrogate models}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Gandhi, Heta A and White, Andrew D}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">journal</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{ChemRxiv}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">publisher</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Cambridge Open Engage}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">{2022}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">doi</span><span class="w">       </span><span class="p">=</span><span class="w"> </span><span class="s">{10.26434/chemrxiv-2022-v5p6m}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">url</span><span class="w">       </span><span class="p">=</span><span class="w"> </span><span class="s">{https://doi.org/10.26434/chemrxiv-2022-v5p6m}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For the natural language explanations, please cite <a class="reference external" href="https://chemrxiv.org/engage/chemrxiv/article-details/633731d1f764e6e535093041">Gandhi and White</a></p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@article</span><span class="p">{</span><span class="nl">gandhi2022explaining</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w">     </span><span class="p">=</span><span class="w"> </span><span class="s">{Explaining molecular properties with natural language}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{Gandhi, Heta A and White, Andrew D}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">journal</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{ChemRxiv}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">publisher</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Cambridge Open Engage}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w">      </span><span class="p">=</span><span class="w"> </span><span class="s">{2022}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">doi</span><span class="w">       </span><span class="p">=</span><span class="w"> </span><span class="s">{10.26434/chemrxiv-2022-v5p6m-v3}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">url</span><span class="w">       </span><span class="p">=</span><span class="w"> </span><span class="s">{https://chemrxiv.org/engage/chemrxiv/article-details/633731d1f764e6e535093041}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="toc.html" class="btn btn-neutral float-left" title="exmol" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="changelog.html" class="btn btn-neutral float-right" title="Change Log" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Geemi Wellawatte, Andrew D White.
+      <span class="lastupdated">Last updated on True.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

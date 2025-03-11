@@ -1,0 +1,1102 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code to Generate Explanations for Different Scents &mdash; exmol  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../toc.html" class="icon icon-home">
+            exmol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/Tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper1_CFs/Schematic.html">MMACE Paper: Counterfactual Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper1_CFs/RF.html">MMACE Paper: Random Forest for Blood-Brain Barrier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper1_CFs/GNN.html">MMACE Paper: Graph Neural Network for HIV Inhibition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper1_CFs/Solubility-RNN.html">MMACE Paper: Recurrent Neural Network for Predicting Solubility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/Solubility-RNN.html">LIME paper: Recurrent Neural Network for Solubility Prediciton</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/RF-lime.html">LIME paper: Random Forest for Solubility Prediciton</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../toc.html">exmol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../toc.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Code to Generate Explanations for Different Scents</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ur-whitelab/exmol/blob/main/docs/source/paper3_Scents/GeneratingScentExplanations.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="code-to-generate-explanations-for-different-scents">
+<h1>Code to Generate Explanations for Different Scents<a class="headerlink" href="#code-to-generate-explanations-for-different-scents" title="Link to this heading"></a></h1>
+<p>Using exmol package: https://github.com/ur-whitelab/exmol</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Imports</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">exmol</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rdkit</span><span class="o">,</span><span class="w"> </span><span class="nn">rdkit.Chem</span><span class="o">,</span><span class="w"> </span><span class="nn">rdkit.Chem.rdDepictor</span><span class="o">,</span><span class="w"> </span><span class="nn">rdkit.Chem.Draw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">SVG</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdkit.Chem.Draw</span><span class="w"> </span><span class="kn">import</span> <span class="n">MolToImage</span> <span class="k">as</span> <span class="n">mol2img</span><span class="p">,</span> <span class="n">DrawMorganBit</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdkit.Chem</span><span class="w"> </span><span class="kn">import</span> <span class="n">rdchem</span><span class="p">,</span> <span class="n">MACCSkeys</span><span class="p">,</span> <span class="n">AllChem</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">skunk</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cairosvg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyrfume</span>  <span class="c1"># for loading dataset</span>
+
+<span class="c1"># Packages needed for GNN model (model used when creating spaces)</span>
+<span class="c1">##not needed if generating descriptor explanations or NLEs using a previously created sample space</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">haiku</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">hk</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+
+<span class="c1"># Plotting style</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.font_manager</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">font_manager</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
+
+<span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span>
+    <span class="s2">&quot;https://github.com/google/fonts/raw/main/ofl/ibmplexmono/IBMPlexMono-Regular.ttf&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IBMPlexMono-Regular.ttf&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fe</span> <span class="o">=</span> <span class="n">font_manager</span><span class="o">.</span><span class="n">FontEntry</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="s2">&quot;IBMPlexMono-Regular.ttf&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;plexmono&quot;</span><span class="p">)</span>
+<span class="n">font_manager</span><span class="o">.</span><span class="n">fontManager</span><span class="o">.</span><span class="n">ttflist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fe</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;axes.facecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;#f5f4e9&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;grid.color&quot;</span><span class="p">:</span> <span class="s2">&quot;#AAAAAA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.edgecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;#333333&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;figure.facecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;#FFFFFF&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.grid&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;axes.prop_cycle&quot;</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">cycler</span><span class="p">(</span><span class="s2">&quot;color&quot;</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Dark2</span><span class="o">.</span><span class="n">colors</span><span class="p">),</span>
+        <span class="s2">&quot;font.family&quot;</span><span class="p">:</span> <span class="n">fe</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="s2">&quot;figure.figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">3.5</span> <span class="o">/</span> <span class="mf">1.2</span><span class="p">),</span>
+        <span class="s2">&quot;ytick.left&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;xtick.bottom&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">set_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">13</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span> <span class="kn">from</span><span class="w"> </span><span class="nn">rdkit.Chem</span><span class="w"> </span><span class="kn">import</span> <span class="n">rdchem</span><span class="p">,</span> <span class="n">MACCSkeys</span><span class="p">,</span> <span class="n">AllChem</span>  <span class="c1"># type: ignore</span>
+<span class="g g-Whitespace">     </span><span class="mi">12</span> <span class="kn">import</span><span class="w"> </span><span class="nn">skunk</span>
+<span class="ne">---&gt; </span><span class="mi">13</span> <span class="kn">import</span><span class="w"> </span><span class="nn">cairosvg</span>
+<span class="g g-Whitespace">     </span><span class="mi">14</span> <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+<span class="g g-Whitespace">     </span><span class="mi">15</span> <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;cairosvg&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<section id="gnn-model-related-code">
+<h2>GNN model related code<a class="headerlink" href="#gnn-model-related-code" title="Link to this heading"></a></h2>
+<p>Code below modified from example code given in the “Predicting DFT Energies with GNNs”, “Interpretability and Deep Learning” sections of “Deep Learning for Molecules and Materials” textbook (https://dmol.pub/applied/QM9.html)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Parameters for GNN model (parameters being read in)</span>
+<span class="n">node_feat_length</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">message_feat_length</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">graph_feat_length</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">weights_stddevGNN</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+<span class="c1"># Load data from pyrfume</span>
+<span class="n">scentdata</span> <span class="o">=</span> <span class="n">scentdata</span> <span class="o">=</span> <span class="n">pyrfume</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span>
+    <span class="s2">&quot;leffingwell/leffingwell_data.csv&quot;</span><span class="p">,</span> <span class="n">remote</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+
+<span class="c1"># Code to generate list of all scent labels (scentClasses)</span>
+<span class="n">numMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">scentdata</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">numClasses</span> <span class="o">=</span> <span class="mi">112</span>  <span class="c1"># No odorless class</span>
+<span class="n">scentClasses</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;scentClasses.csv&quot;</span><span class="p">)</span>
+<span class="n">scentClasses</span> <span class="o">=</span> <span class="n">scentClasses</span><span class="p">[</span><span class="s2">&quot;Scent&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">moleculeScentList</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">scentdata</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">gen_smiles2graph</span><span class="p">(</span><span class="n">sml</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Argument for the RD2NX function should be a valid SMILES sequence</span>
+<span class="sd">    returns: the graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">sml</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">AddHs</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">order_string</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">TRIPLE</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">AROMATIC</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()))</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="n">i</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># Add in whether atom is in a ring or not for one-hot encoding</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">IsInRing</span><span class="p">():</span>
+            <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">adj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">GetBonds</span><span class="p">():</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">())</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">())</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">j</span><span class="o">.</span><span class="n">GetBondType</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">order_string</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">order_string</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Warning</span><span class="p">(</span><span class="s2">&quot;Ignoring bond order&quot;</span> <span class="o">+</span> <span class="n">order</span><span class="p">)</span>
+        <span class="n">adj</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">adj</span><span class="p">[</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">adj</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">adj</span>
+
+
+<span class="c1"># Function that creates label vector given list of strings describing scent of molecule as input</span>
+<span class="c1"># Each index in label vector corresponds to specific scent -&gt; if output has a 0 at index i, then molecule does not have scent i</span>
+<span class="c1"># If label vector has 1 at index i, then molecule does have scent i</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">createLabelVector</span><span class="p">(</span><span class="n">scentsList</span><span class="p">):</span>
+    <span class="c1"># Find class index in label vector that each scent corresponds to &amp; update label for that molecule to 1</span>
+    <span class="n">labelVector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scentsList</span><span class="p">)):</span>
+        <span class="c1"># Find class index</span>
+        <span class="n">classIndex</span> <span class="o">=</span> <span class="n">scentClasses</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">scentsList</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="c1"># print(classIndex)</span>
+        <span class="c1"># print(scentsList[j])</span>
+        <span class="c1"># print(scentClasses[classIndex])</span>
+        <span class="c1"># Update label vector</span>
+        <span class="n">labelVector</span><span class="p">[</span><span class="n">classIndex</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">labelVector</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generateGraphs</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">scentdata</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="c1"># Get graph data for training, testing &amp; validation sets</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphs</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GNNLayer</span><span class="p">(</span><span class="n">hk</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="c1"># split input into nodes, edges &amp; features</span>
+        <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="c1"># Nodes is of shape (N, Nf) --&gt; N = # atoms, Nf = node_feature_length</span>
+        <span class="c1"># Edges is of shape (N,N) (adjacency matrix)</span>
+        <span class="c1"># Features is of shape (Gf) --&gt; Gf = graph_feature_length</span>
+
+        <span class="n">graph_feature_len</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># graph_feature_len (Gf)</span>
+        <span class="n">node_feature_len</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># node_feature_len (Nf)</span>
+        <span class="n">message_feature_len</span> <span class="o">=</span> <span class="n">message_feat_length</span>  <span class="c1"># message_feature_length (Mf)</span>
+
+        <span class="c1"># Initialize weights</span>
+        <span class="n">w_init</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">RandomNormal</span><span class="p">(</span><span class="n">stddev</span><span class="o">=</span><span class="n">weights_stddevGNN</span><span class="p">)</span>
+
+        <span class="c1"># we is of shape (Nf,Mf)</span>
+        <span class="n">we</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;we&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">node_feature_len</span><span class="p">,</span> <span class="n">message_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># b is of shape (Mf)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">message_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span><span class="p">)</span>
+
+        <span class="c1"># wv is of shape (Mf,Nf)</span>
+        <span class="n">wv</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;wv&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">message_feature_len</span><span class="p">,</span> <span class="n">node_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># wu is of shape (Nf,Gf)</span>
+        <span class="n">wu</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;wu&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">node_feature_len</span><span class="p">,</span> <span class="n">graph_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># make nodes be N x N x Nf so we can just multiply directly (N = number of atoms)</span>
+        <span class="c1"># ek is now shaped N x N x Mf</span>
+        <span class="n">ek</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span>
+            <span class="n">b</span>
+            <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">@</span> <span class="n">we</span>
+            <span class="o">*</span> <span class="n">edges</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Uncomment lines below to update edges (also edit return line so new_edges is returned)</span>
+        <span class="c1"># Update edges, use jnp.any to have new_edges be of shape N x N</span>
+        <span class="c1"># new_edges = jnp.any(ek, axis=-1)</span>
+
+        <span class="c1"># Normalize over edge features w/layer normalization</span>
+        <span class="c1"># new_edges = hk.LayerNorm(axis=[0,1], create_scale=False, create_offset=False, eps=1e-05)(new_edges)</span>
+
+        <span class="c1"># take sum over neighbors to get ebar shape = Nf x Mf</span>
+        <span class="n">ebar</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ek</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># dense layer for new nodes to get new_nodes shape = N x Nf</span>
+        <span class="n">new_nodes</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span><span class="n">ebar</span> <span class="o">@</span> <span class="n">wv</span><span class="p">)</span> <span class="o">+</span> <span class="n">nodes</span>  <span class="c1"># Use leaky ReLU</span>
+
+        <span class="c1"># Normalize over node features w/layer normalization</span>
+        <span class="n">new_nodes</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span>
+            <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">create_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">create_offset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span>
+        <span class="p">)(</span><span class="n">new_nodes</span><span class="p">)</span>
+
+        <span class="c1"># sum over nodes to get shape features so global_node_features shape = Nf</span>
+        <span class="n">global_node_features</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">new_nodes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># dense layer for new features so new_features shape = Gf</span>
+        <span class="n">new_features</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span><span class="n">global_node_features</span> <span class="o">@</span> <span class="n">wu</span><span class="p">)</span> <span class="o">+</span> <span class="n">features</span>
+        <span class="p">)</span>  <span class="c1"># Use leaky ReLU for activation</span>
+
+        <span class="c1"># just return features for ease of use</span>
+        <span class="k">return</span> <span class="n">new_nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">new_features</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">model_fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">graph_feat_length</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">features</span>
+
+    <span class="c1"># NOTE: If edited num_GNN_layers, need to edit code below (increase or decrease # times have x = GNNLayer(...))</span>
+    <span class="c1"># 4 GNN layers</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># 2 dense layers</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)(</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># logits = jax.nn.relu(logits) #ReLU activation between dense layer</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logits</span>  <span class="c1"># Model now returns logits</span>
+
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">without_apply_rng</span><span class="p">(</span><span class="n">hk</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">model_fn</span><span class="p">))</span>
+
+<span class="c1"># Initialize model</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">sampleData</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">dataVal</span> <span class="ow">in</span> <span class="n">sampleData</span><span class="p">:</span>  <span class="c1"># Look into later how to get larger set</span>
+    <span class="p">(</span><span class="n">nodes_i</span><span class="p">,</span> <span class="n">edges_i</span><span class="p">),</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">dataVal</span>
+<span class="n">nodes_i</span> <span class="o">=</span> <span class="n">nodes_i</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">edges_i</span> <span class="o">=</span> <span class="n">edges_i</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+<span class="n">yi</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">xi</span> <span class="o">=</span> <span class="p">(</span><span class="n">nodes_i</span><span class="p">,</span> <span class="n">edges_i</span><span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">xi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load optimal parameters for GNN model</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Edit fileName to change parameters being loaded&quot;</span><span class="p">)</span>
+<span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;optParams_dry-waterfall-17.npy&quot;</span>  <span class="c1"># Currently optimal parameters, edit when get better model</span>
+<span class="n">paramsArr</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fileName</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">opt_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;gnn_layer&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s2">&quot;we&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="s2">&quot;wu&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+        <span class="s2">&quot;wv&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;gnn_layer_1&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+        <span class="s2">&quot;we&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span>
+        <span class="s2">&quot;wu&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span>
+        <span class="s2">&quot;wv&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;gnn_layer_2&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span>
+        <span class="s2">&quot;we&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span>
+        <span class="s2">&quot;wu&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span>
+        <span class="s2">&quot;wv&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;gnn_layer_3&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">12</span><span class="p">],</span>
+        <span class="s2">&quot;we&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">13</span><span class="p">],</span>
+        <span class="s2">&quot;wu&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">14</span><span class="p">],</span>
+        <span class="s2">&quot;wv&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">15</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;linear&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">17</span><span class="p">]},</span>
+    <span class="s2">&quot;linear_1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">19</span><span class="p">]},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="explanation-plotting-related-functions">
+<h2>Explanation &amp; plotting related functions<a class="headerlink" href="#explanation-plotting-related-functions" title="Link to this heading"></a></h2>
+<section id="modified-functions-used-when-selecting-counterfactuals-such-that-only-the-label-for-the-selected-scent-is-flipped">
+<h3>Modified functions used when selecting counterfactuals such that only the label for the selected scent is flipped<a class="headerlink" href="#modified-functions-used-when-selecting-counterfactuals-such-that-only-the-label-for-the-selected-scent-is-flipped" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_select_examples</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">examples</span><span class="p">,</span> <span class="n">nmols</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># similarity filtered by if cluster/counter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cluster_score</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">cluster</span> <span class="o">==</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">cond</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">*</span> <span class="n">e</span><span class="o">.</span><span class="n">similarity</span>
+
+    <span class="n">clusters</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">cluster</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">clusters</span><span class="p">:</span>
+        <span class="n">close_counter</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">examples</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">:</span> <span class="n">cluster_score</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="c1"># check if actually is (since call could have been zero)</span>
+        <span class="k">if</span> <span class="n">cluster_score</span><span class="p">(</span><span class="n">close_counter</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">close_counter</span><span class="p">)</span>
+
+    <span class="c1"># trim, in case we had too many cluster</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">similarity</span> <span class="o">*</span> <span class="n">cond</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="n">nmols</span><span class="p">]</span>
+
+    <span class="c1"># fill in remaining</span>
+    <span class="n">ncount</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">cond</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="p">])</span>
+    <span class="n">fill</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nmols</span> <span class="o">-</span> <span class="n">ncount</span><span class="p">)</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+        <span class="nb">sorted</span><span class="p">(</span><span class="n">examples</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">similarity</span> <span class="o">*</span> <span class="n">cond</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="n">fill</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">result</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">cf_explain</span><span class="p">(</span><span class="n">examples</span><span class="p">,</span> <span class="n">nmols</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;From given :obj:`Examples&lt;Example&gt;`, find closest counterfactuals (see :doc:`index`)</span>
+<span class="sd">    :param examples: Output from :func:`sample_space`</span>
+<span class="sd">    :param nmols: Desired number of molecules</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_counter</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">yhat</span> <span class="o">!=</span> <span class="n">examples</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">yhat</span>
+
+    <span class="n">scent_classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">scentClasses</span><span class="p">])</span>
+    <span class="n">origin_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">my_model</span><span class="p">(</span><span class="n">examples</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">smiles</span><span class="p">,</span> <span class="n">scent</span><span class="p">)</span> <span class="k">for</span> <span class="n">scent</span> <span class="ow">in</span> <span class="n">scent_classes</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">origin_labels</span><span class="p">)</span>
+    <span class="c1">#     print([scentClasses[i] for i, x in enumerate(origin_labels) if x==1])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">scent_classes</span><span class="p">[</span><span class="n">origin_labels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">selection</span> <span class="o">=</span> <span class="n">_select_examples</span><span class="p">(</span><span class="n">is_counter</span><span class="p">,</span> <span class="n">examples</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="nb">len</span><span class="p">(</span><span class="n">examples</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+    <span class="n">selection</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="n">selection</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">similarity</span> <span class="o">*</span> <span class="n">is_counter</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">selection</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">my_model</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">smiles</span><span class="p">,</span> <span class="n">scent</span><span class="p">)</span> <span class="k">for</span> <span class="n">scent</span> <span class="ow">in</span> <span class="n">scent_classes</span><span class="p">])</span>
+        <span class="n">flips</span> <span class="o">=</span> <span class="n">origin_labels</span> <span class="o">!=</span> <span class="n">labels</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;flipped labels: </span><span class="si">{</span><span class="n">scent_classes</span><span class="p">[</span><span class="n">flips</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">flip_count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">flips</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">flip_count</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">similarity</span> <span class="o">&gt;</span> <span class="mf">0.3</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="n">nmols</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Counterfactual </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">return</span> <span class="n">examples</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">result</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="cosine-similarity-function-used-to-compute-similarity-for-descriptor-explanations-with-multiple-base-molecules">
+<h3>Cosine similarity function used to compute similarity for descriptor explanations with multiple base molecules<a class="headerlink" href="#cosine-similarity-function-used-to-compute-similarity-for-descriptor-explanations-with-multiple-base-molecules" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># compute dot product with labels</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cosine_similarity_base</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">llists</span><span class="p">):</span>
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_dot&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">bases</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="n">j</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_dot&quot;</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># cosine similarity</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">llists</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_dot&quot;</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">continue</span>
+            <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_dot&quot;</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">llists</span><span class="p">[</span><span class="n">base</span><span class="p">]</span>
+                <span class="o">@</span> <span class="n">llists</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">llists</span><span class="p">[</span><span class="n">base</span><span class="p">])</span>
+                <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">llists</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="functions-used-for-generating-plots-with-model-fit-creating-a-list-of-exmol-examples-from-a-csv-file">
+<h3>Functions used for generating plots with model fit &amp; creating a list of exmol Examples from a csv file<a class="headerlink" href="#functions-used-for-generating-plots-with-model-fit-creating-a-list-of-exmol-examples-from-a-csv-file" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Code in this cell taken from Solubility-RNN.ipynb notebook from https://github.com/ur-whitelab/exmol/blob/main/paper2_LIME/Solubility-RNN.ipynb</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">weighted_mean</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">weighted_cov</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">weighted_mean</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">weighted_mean</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">)))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">weighted_correlation</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">weighted_cov</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="n">weighted_cov</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">weighted_cov</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_correlation</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">descriptor_type</span><span class="p">):</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">lime_explain</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">descriptor_type</span><span class="p">)</span>
+    <span class="n">fkw</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">)}</span>
+    <span class="n">font</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">}</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+    <span class="n">matplotlib</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">matplotlib</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s2">&quot;font&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">ax_dict</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplot_mosaic</span><span class="p">(</span><span class="s2">&quot;AABBB&quot;</span><span class="p">)</span>
+    <span class="c1"># Plot space by fit</span>
+    <span class="n">base_examples</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">space</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">is_origin</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span>
+    <span class="n">svg</span> <span class="o">=</span> <span class="n">plot_space_by_fit_multiple_bases</span><span class="p">(</span>
+        <span class="n">space</span><span class="p">,</span>
+        <span class="n">base_examples</span><span class="p">,</span>
+        <span class="n">figure_kwargs</span><span class="o">=</span><span class="n">fkw</span><span class="p">,</span>
+        <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+        <span class="n">offset</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;B&quot;</span><span class="p">],</span>
+        <span class="n">beta</span><span class="o">=</span><span class="n">beta</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Compute y_wls</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">similarity</span> <span class="o">+</span> <span class="mf">0.000001</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">5</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">space</span><span class="p">])</span>
+    <span class="n">non_zero</span> <span class="o">=</span> <span class="n">w</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">non_zero</span><span class="p">]</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">ys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">yhat</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">space</span><span class="p">])[</span><span class="n">non_zero</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">x_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">descriptors</span><span class="o">.</span><span class="n">descriptors</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">space</span><span class="p">])[</span>
+        <span class="n">non_zero</span>
+    <span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">y_wls</span> <span class="o">=</span> <span class="n">x_mat</span> <span class="o">@</span> <span class="n">beta</span>
+    <span class="n">y_wls</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+
+    <span class="n">lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+    <span class="n">higher</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+
+    <span class="c1"># set transparency using w</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">))</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Oranges</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="n">cmap</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>
+
+    <span class="n">corr</span> <span class="o">=</span> <span class="n">weighted_correlation</span><span class="p">(</span><span class="n">ys</span><span class="p">,</span> <span class="n">y_wls</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">higher</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">higher</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+        <span class="s2">&quot;--&quot;</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">sc</span> <span class="o">=</span> <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ys</span><span class="p">,</span> <span class="n">y_wls</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
+    <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;weighted </span><span class="se">\n</span><span class="s2">correlation = </span><span class="si">{</span><span class="n">corr</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\hat</span><span class="si">{y}</span><span class="s2">$&quot;</span><span class="p">)</span>
+    <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$g$&quot;</span><span class="p">)</span>
+    <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Weighted Least Squares Fit&quot;</span><span class="p">)</span>
+    <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">lower</span> <span class="o">-</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">higher</span> <span class="o">+</span> <span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">lower</span> <span class="o">-</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">higher</span> <span class="o">+</span> <span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get_data_ratio</span><span class="p">(),</span> <span class="n">adjustable</span><span class="o">=</span><span class="s2">&quot;box&quot;</span><span class="p">)</span>
+    <span class="n">sm</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">ScalarMappable</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Oranges</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;horizontal&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax_dict</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">])</span>
+    <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Chemical similarity&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Modified function for multiple bases based on plot_space_by_fit function in exmol plot_utils.py file</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_space_by_fit_multiple_bases</span><span class="p">(</span>
+    <span class="n">examples</span><span class="p">,</span>
+    <span class="n">exps</span><span class="p">,</span>
+    <span class="n">beta</span><span class="p">,</span>
+    <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="n">mol_fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">figure_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">cartoon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">rasterized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">imgs</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">plot_utils</span><span class="o">.</span><span class="n">_mol_images</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">mol_size</span><span class="p">,</span> <span class="n">mol_fontsize</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">figure_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">figure_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">)}</span>
+    <span class="n">base_color</span> <span class="o">=</span> <span class="s2">&quot;gray&quot;</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="o">**</span><span class="n">figure_kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+
+    <span class="n">yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">yhat</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">yhat</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
+    <span class="n">x_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">descriptors</span><span class="o">.</span><span class="n">descriptors</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">examples</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">x_mat</span> <span class="o">@</span> <span class="n">beta</span>
+    <span class="c1"># use resids as colors</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">(</span><span class="n">yhat</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">normalizer</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">colors</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">colors</span><span class="p">))</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="s2">&quot;PuBu_r&quot;</span>
+
+    <span class="n">space_x</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">]</span>
+    <span class="n">space_y</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">examples</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">cartoon</span><span class="p">:</span>
+        <span class="c1"># plot shading, lines, front</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">space_x</span><span class="p">,</span> <span class="n">space_y</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="n">rasterized</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">space_x</span><span class="p">,</span> <span class="n">space_y</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;1.0&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">rasterized</span><span class="o">=</span><span class="n">rasterized</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+            <span class="n">space_x</span><span class="p">,</span>
+            <span class="n">space_y</span><span class="p">,</span>
+            <span class="mi">50</span><span class="p">,</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">normalizer</span><span class="p">(</span><span class="n">colors</span><span class="p">),</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+            <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">rasterized</span><span class="o">=</span><span class="n">rasterized</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+            <span class="n">space_x</span><span class="p">,</span>
+            <span class="n">space_y</span><span class="p">,</span>
+            <span class="mi">40</span><span class="p">,</span>
+            <span class="n">c</span><span class="o">=</span><span class="n">normalizer</span><span class="p">(</span><span class="n">colors</span><span class="p">),</span>
+            <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+            <span class="n">edgecolors</span><span class="o">=</span><span class="s2">&quot;grey&quot;</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_data_ratio</span><span class="p">(),</span> <span class="n">adjustable</span><span class="o">=</span><span class="s2">&quot;box&quot;</span><span class="p">)</span>
+    <span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;horizontal&quot;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+    <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;squared error&quot;</span><span class="p">)</span>
+
+    <span class="c1"># now plot cfs/annotated points</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">exps</span><span class="p">],</span>
+        <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">exps</span><span class="p">],</span>
+        <span class="n">c</span><span class="o">=</span><span class="n">normalizer</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">yhat</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">exps</span><span class="p">]),</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span>
+        <span class="n">edgecolors</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">exps</span><span class="p">])</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">e</span><span class="o">.</span><span class="n">position</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">exps</span><span class="p">])</span>
+
+    <span class="n">titles</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">colors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">exps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">e</span><span class="o">.</span><span class="n">is_origin</span><span class="p">:</span>
+            <span class="n">titles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Similarity = </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">similarity</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">f(x)=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">yhat</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="nb">any</span><span class="p">,</span> <span class="n">base_color</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">titles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Base </span><span class="se">\n</span><span class="s2">f(x)=</span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">yhat</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">colors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cast</span><span class="p">(</span><span class="nb">any</span><span class="p">,</span> <span class="n">base_color</span><span class="p">))</span>
+    <span class="c1"># exmol.plot_utils._image_scatter(x, y, imgs, titles, colors, ax, offset=offset)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">createExampleListfromDataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">exampleList</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list[exmol.Example]()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)):</span>
+        <span class="c1"># Since reading position values from csv file, data.position is a string - need to convert to list of floats</span>
+        <span class="n">positionString</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">positionString</span> <span class="o">=</span> <span class="n">positionString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">positionString</span> <span class="o">=</span> <span class="n">positionString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">positionList</span> <span class="o">=</span> <span class="n">positionString</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="c1"># remove empty string (&#39;&#39;) elements in positionList</span>
+        <span class="k">while</span> <span class="s2">&quot;&quot;</span> <span class="ow">in</span> <span class="n">positionList</span><span class="p">:</span>
+            <span class="n">positionList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">positionList</span><span class="p">]</span>
+        <span class="c1"># using weighted tanimoto with dot product</span>
+        <span class="n">exampleList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">exmol</span><span class="o">.</span><span class="n">Example</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">smiles</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">selfies</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">similarity</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">yhat</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">positions</span><span class="p">,</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">is_origin</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="n">i</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">exampleList</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-modified-alphabet-to-use-when-creating-explanations">
+<h3>Create modified alphabet to use when creating explanations<a class="headerlink" href="#create-modified-alphabet-to-use-when-creating-explanations" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create modified alphabet to use</span>
+<span class="n">alphabet</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">get_basic_alphabet</span><span class="p">()</span>
+<span class="n">to_remove</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># remove [B],[#B],[=B]</span>
+<span class="n">to_remove</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;[B]&quot;</span><span class="p">,</span> <span class="s2">&quot;[#B]&quot;</span><span class="p">,</span> <span class="s2">&quot;[=B]&quot;</span><span class="p">])</span>
+
+<span class="c1"># remove [I],[F],[Cl], [Br]</span>
+<span class="n">to_remove</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;[I]&quot;</span><span class="p">,</span> <span class="s2">&quot;[F]&quot;</span><span class="p">,</span> <span class="s2">&quot;[Cl]&quot;</span><span class="p">,</span> <span class="s2">&quot;[Br]&quot;</span><span class="p">])</span>
+
+<span class="n">alphabet</span> <span class="o">-=</span> <span class="nb">set</span><span class="p">(</span><span class="n">to_remove</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check that alphabet does not contain boron, iodine, fluorine, bromine nor chlorine</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">print(alphabet)</span>
+
+<span class="sd">boronInAlphabet = (&quot;[#B]&quot; in alphabet) and (&quot;[B]&quot; in alphabet) and (&quot;[=B]&quot; in alphabet)</span>
+<span class="sd">iodineInAlphabet = (&quot;[I]&quot; in alphabet)</span>
+<span class="sd">fluorineInAlphabet = (&quot;[F]&quot; in alphabet)</span>
+<span class="sd">bromineInAlphabet = (&quot;[Br]&quot; in alphabet)</span>
+<span class="sd">chlorineInAlphabet = (&quot;[Cl]&quot; in alphabet)</span>
+
+<span class="sd">#Boron is in exmol basic alphabet</span>
+<span class="sd">print(&quot;Check that using modified basic alphabet (i.e. no Boron, Iodine, Fluorine, Bromine, nor Chlorine)&quot;)</span>
+<span class="sd">print(f&quot;Boron is in basic alphabet? {boronInAlphabet}&quot;)</span>
+<span class="sd">print(f&quot;Iodine is in basic alphabet? {iodineInAlphabet}&quot;)</span>
+<span class="sd">print(f&quot;Fluorine is in basic alphabet? {fluorineInAlphabet}&quot;)</span>
+<span class="sd">print(f&quot;Bromine is in basic alphabet? {bromineInAlphabet}&quot;)</span>
+<span class="sd">print(f&quot;Chlorine is in basic alphabet? {chlorineInAlphabet}&quot;)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="generating-counterfactual-explanations-for-ethyl-benzoate-fruity">
+<h2>Generating counterfactual explanations for ethyl benzoate (“fruity”)<a class="headerlink" href="#generating-counterfactual-explanations-for-ethyl-benzoate-fruity" title="Link to this heading"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For counterfactuals, need hard yhat values - read in thresholds from csv file</span>
+<span class="n">thresholds</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="s2">&quot;ThresholdsForMaxF1_OdorlessClassRemoved_dry-waterfall-17_trainAndValid.csv&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Model function that takes in SMILES string and scent string as input (rather than molecular graph + parameter)</span>
+<span class="c1"># Output is prediction on whether molecule has a certain scent (1) or not (0)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_model</span><span class="p">(</span><span class="n">smilesString</span><span class="p">,</span> <span class="n">scentString</span><span class="p">):</span>
+    <span class="n">molecularGraph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">smilesString</span><span class="p">)</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">scentClasses</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">scentString</span><span class="p">)</span>
+    <span class="n">thresholdIndex_scent</span> <span class="o">=</span> <span class="n">thresholds</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">thresholds</span><span class="o">.</span><span class="n">Scent</span> <span class="o">==</span> <span class="n">scentString</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="n">thresholds</span><span class="o">.</span><span class="n">Threshold</span><span class="p">[</span><span class="n">thresholdIndex_scent</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span>
+        <span class="mi">0</span>
+    <span class="p">]</span>  <span class="c1"># Threshold is the one that maximizes the F1 score</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">opt_params</span><span class="p">,</span> <span class="n">molecularGraph</span><span class="p">))[</span><span class="n">pos</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">pred</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">pred</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Molecules being examined/generating counterfactuals for:</span>
+<span class="n">fruity_ethylbenzoate</span> <span class="o">=</span> <span class="s2">&quot;CCOC(=O)C1=CC=CC=C1&quot;</span>  <span class="c1"># Ethyl benzoate (https://pubchem.ncbi.nlm.nih.gov/compound/Ethyl-benzoate#section=InChI)</span>
+
+<span class="n">fatty_24decadienal</span> <span class="o">=</span> <span class="s2">&quot;CCCCCC=CC=CC=O&quot;</span>  <span class="c1"># 2,4 Decadienal (https://pubchem.ncbi.nlm.nih.gov/compound/2_4-Decadienal#section=InChIKey)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment code below to generate ethyl benzoate counterfactuals around fruity</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">samples_ethylbenzoate_fruity = exmol.sample_space(</span>
+<span class="sd">    fruity_ethylbenzoate,</span>
+<span class="sd">    lambda smi, sel: my_model(smi, &quot;fruity&quot;),</span>
+<span class="sd">    batched=False,</span>
+<span class="sd">    preset=&quot;medium&quot;,</span>
+<span class="sd">    num_samples=20000,</span>
+<span class="sd">    method_kwargs= {&#39;alphabet&#39;: alphabet}</span>
+<span class="sd">)</span>
+
+<span class="sd">cfs_ethylbenzoate_fruity = cf_explain(samples_ethylbenzoate_fruity, nmols=1)</span>
+<span class="sd">exmol.plot_cf(cfs_ethylbenzoate_fruity[:2], figure_kwargs = {&#39;figsize&#39;: (10,8)}, mol_size=(300, 300), nrows = 1)</span>
+<span class="sd">plt.show()</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read in ethyl benzoate cfs file &amp; create image</span>
+<span class="n">cfs_ethylbenzoate_fruity</span> <span class="o">=</span> <span class="n">createExampleListfromDataFrame</span><span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;cfs_ethylbenzoate_fruity.csv&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Uncomment lines below to save results to csv</span>
+<span class="c1"># cfs_ethylbenzoate_fruity_data = pd.DataFrame(cfs_ethylbenzoate_fruity)</span>
+<span class="c1"># cfs_ethylbenzoate_fruity_data.to_csv(&quot;cfs_ethylbenzoate_fruity.csv&quot;, index=False)</span>
+<span class="c1"># samples_ethylbenzoate_fruity_data = pd.DataFrame(samples_ethylbenzoate_fruity)</span>
+<span class="c1"># samples_ethylbenzoate_fruity_data.to_csv(&quot;samples_ethylbenzoate_fruity.csv&quot;, index=False)</span>
+
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_cf</span><span class="p">(</span>
+    <span class="n">cfs_ethylbenzoate_fruity</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span>
+    <span class="n">figure_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">)},</span>
+    <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span>
+    <span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="c1"># plt.savefig(&quot;cfs_ethylbenzoate_fruity.png&quot;)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="generate-descriptor-explanations-natural-language-explanations-for-fatty">
+<h2>Generate descriptor explanations &amp; natural language explanations for “fatty”<a class="headerlink" href="#generate-descriptor-explanations-natural-language-explanations-for-fatty" title="Link to this heading"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Function takes in a SMILES string for a molecule and returns the logit predictions for all scent classes</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_model_allScents_logits</span><span class="p">(</span><span class="n">smilesString</span><span class="p">):</span>
+    <span class="n">molecularGraph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">smilesString</span><span class="p">)</span>
+    <span class="n">logits_predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">opt_params</span><span class="p">,</span> <span class="n">molecularGraph</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">logits_predictions</span>
+
+
+<span class="c1"># Function takes in a SMILES string for a molecule and returns the logit predictions for the specified scent</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_model_logits</span><span class="p">(</span><span class="n">smilesString</span><span class="p">,</span> <span class="n">scentString</span><span class="p">):</span>
+    <span class="n">molecularGraph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">smilesString</span><span class="p">)</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="n">scentClasses</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">scentString</span><span class="p">)</span>
+    <span class="n">pred_logits</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">opt_params</span><span class="p">,</span> <span class="n">molecularGraph</span><span class="p">)[</span><span class="n">pos</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pred_logits</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="create-sample-space">
+<h3>Create sample space<a class="headerlink" href="#create-sample-space" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment code in cell below to generate sample space</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">#For each positive example, generate sample space (using STONED) around that example (use that example as the base molecule)</span>
+<span class="sd">space_total = []</span>
+<span class="sd">scent = &#39;fatty&#39;</span>
+<span class="sd">for i in range(numMolecules): #sample space created using positive examples</span>
+<span class="sd">    molecule = scentdata.smiles[i]</span>
+<span class="sd">    if(moleculeScentList[i].count(scent) == 1): </span>
+<span class="sd">        sampleSpace = exmol.sample_space(molecule, lambda smi, sel: my_model_logits(smi,scent), batched=False, preset=&#39;medium&#39;, num_samples=200, method_kwargs= {&#39;alphabet&#39;: alphabet})</span>
+<span class="sd">        space_total.extend(sampleSpace)</span>
+
+<span class="sd">space_total = pd.DataFrame(space_total)</span>
+
+<span class="sd">#Get predictions for all scent classes for all molecules in the space</span>
+<span class="sd">predictions_logits = []</span>
+<span class="sd">mols = space_total[&#39;smiles&#39;]</span>
+<span class="sd">for mol in mols:</span>
+<span class="sd">    preds_logits = my_model_allScents_logits(mol)</span>
+<span class="sd">    predictions_logits.append(preds_logits)</span>
+
+<span class="sd">#Save the space along with scent class predictions to a csv file</span>
+<span class="sd">scentClassesNamesWithLogits = []</span>
+<span class="sd">for c in scentClasses:</span>
+<span class="sd">    scentLogitString = f&#39;{c} + logits&#39;</span>
+<span class="sd">    scentClassesNamesWithLogits.append(scentLogitString)</span>
+
+<span class="sd">space_total[scentClassesNamesWithLogits] = predictions_logits</span>
+<span class="sd">scentFileName = f&#39;space_{scent}.csv&#39;</span>
+<span class="sd">space_total.to_csv(scentFileName)</span>
+<span class="sd">space_total.head()</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="read-in-sample-space-from-csv-file-create-list-of-exmol-examples-from-it">
+<h3>Read in sample space from csv file &amp; create list of exmol Examples from it<a class="headerlink" href="#read-in-sample-space-from-csv-file-create-list-of-exmol-examples-from-it" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download file for &quot;fatty&quot; space from figshare</span>
+<span class="n">filename</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span>
+    <span class="s2">&quot;https://figshare.com/ndownloader/files/38472275&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scent</span> <span class="o">=</span> <span class="s2">&quot;fatty&quot;</span>
+<span class="c1"># NOTE: below reading in a subset of the &quot;fatty&quot; sample space from figshare, code not working right now</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="n">filename</span><span class="p">,</span>
+    <span class="n">usecols</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+    <span class="n">filename</span><span class="p">,</span>
+    <span class="n">usecols</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">123</span><span class="p">)),</span>
+<span class="p">)</span>
+<span class="n">llists</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[:,</span> <span class="mi">1</span><span class="p">:]</span>
+<span class="n">bases</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;is_origin&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">cosine_similarity_base</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">bases</span><span class="p">,</span> <span class="n">llists</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">&quot;similarity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;similarity&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;label_dot&quot;</span><span class="p">]</span>
+
+<span class="c1"># Use smaller set of data (just to check code does not crash) - comment out line below when generating results</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">samples</span> <span class="o">=</span> <span class="n">createExampleListfromDataFrame</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># delete pandas dataframe to save space</span>
+<span class="n">colNames</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">colNames</span><span class="p">:</span>
+    <span class="k">del</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-descriptor-explanation-plots-for-fatty-plot-model-fit-for-each-explanatory-model">
+<h3>Create descriptor explanation plots for “fatty” &amp; plot model fit for each explanatory model<a class="headerlink" href="#create-descriptor-explanation-plots-for-fatty-plot-model-fit-for-each-explanatory-model" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">beta_ECFP</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">lime_explain</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">descriptor_type</span><span class="o">=</span><span class="s2">&quot;ECFP&quot;</span>
+<span class="p">)</span>  <span class="c1"># create ECFP descriptor explanation</span>
+
+<span class="n">svg_ECFP</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">plot_descriptors</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">figure_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">)},</span> <span class="n">return_svg</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">cairosvg</span><span class="o">.</span><span class="n">svg2png</span><span class="p">(</span><span class="n">svg_ECFP</span><span class="p">,</span> <span class="n">write_to</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scent</span><span class="si">}</span><span class="s2">_ecfp.png&quot;</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+
+<span class="n">base_examples</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">samples</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">is_origin</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span>
+
+<span class="n">plot_correlation</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;ECFP&quot;</span><span class="p">)</span>  <span class="c1"># plot ECFP model fit</span>
+<span class="c1"># plt.savefig(f&#39;{scent}_ECFPfitAndCorrelation.png&#39;, bbox_inches=&quot;tight&quot;, transparent=False)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">beta_MACCS</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">lime_explain</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">descriptor_type</span><span class="o">=</span><span class="s2">&quot;MACCS&quot;</span>
+<span class="p">)</span>  <span class="c1"># create MACCS descriptor explanation</span>
+
+<span class="n">svg_MACCS</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">plot_descriptors</span><span class="p">(</span>
+    <span class="n">samples</span><span class="p">,</span> <span class="n">figure_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">)},</span> <span class="n">return_svg</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+<span class="n">cairosvg</span><span class="o">.</span><span class="n">svg2png</span><span class="p">(</span><span class="n">svg_MACCS</span><span class="p">,</span> <span class="n">write_to</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scent</span><span class="si">}</span><span class="s2">_maccs.png&quot;</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+
+<span class="n">base_examples</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">samples</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">is_origin</span> <span class="o">==</span> <span class="kc">True</span><span class="p">]</span>
+
+<span class="n">plot_correlation</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;MACCS&quot;</span><span class="p">)</span>  <span class="c1"># plot MACCS model fit</span>
+<span class="c1"># plt.savefig(f&#39;{scent}_MACCSfitAndCorrelation.png&#39;, bbox_inches=&quot;tight&quot;, transparent=False)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-natural-language-explanations-for-fatty-scent">
+<h3>Create natural language explanations for “fatty” scent<a class="headerlink" href="#create-natural-language-explanations-for-fatty-scent" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">exmol</span><span class="o">.</span><span class="n">lime_explain</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;ecfp&quot;</span><span class="p">)</span>
+<span class="n">s1_ecfp</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">text_explain</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;ecfp&quot;</span><span class="p">,</span> <span class="n">presence_thresh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">lime_explain</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;maccs&quot;</span><span class="p">)</span>
+<span class="n">s2_maccs</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">text_explain</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;maccs&quot;</span><span class="p">,</span> <span class="n">presence_thresh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="c1"># print(f&#39;s1_ecfp: {s1_ecfp}\n&#39;)</span>
+<span class="c1"># print(f&#39;s2_maccs: {s2_maccs}\n&#39;)</span>
+
+<span class="n">explanation_list</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">merge_text_explains</span><span class="p">(</span><span class="n">s1_ecfp</span><span class="p">,</span> <span class="n">s2_maccs</span><span class="p">,</span> <span class="nb">filter</span><span class="o">=</span><span class="mf">1.96</span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span>
+
+<span class="c1"># explanation_list = exmol.merge_text_explains(ecfp_standardized,maccs_standardized, filter=1.96)[:5]</span>
+<span class="n">nle</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">text_explain_generate</span><span class="p">(</span><span class="n">explanation_list</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">scent</span><span class="si">}</span><span class="s2"> scent&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">nle</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="additional-code-to-examine-positive-examples-for-the-fatty-scent">
+<h3>Additional code to examine positive examples for the “fatty” scent<a class="headerlink" href="#additional-code-to-examine-positive-examples-for-the-fatty-scent" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">base_examples</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">samples</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">is_origin</span><span class="p">]</span>
+<span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">Draw</span><span class="o">.</span><span class="n">MolsToGridImage</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">smiles</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">base_examples</span><span class="p">],</span> <span class="n">molsPerRow</span><span class="o">=</span><span class="mi">6</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">maccs_string</span> <span class="o">=</span> <span class="s2">&quot;Is there a C=O double bond?&quot;</span>
+<span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">base_mol</span> <span class="ow">in</span> <span class="n">base_examples</span><span class="p">:</span>
+    <span class="n">pos_desc</span> <span class="o">=</span> <span class="n">base_mol</span><span class="o">.</span><span class="n">descriptors</span><span class="o">.</span><span class="n">descriptor_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">maccs_string</span><span class="p">)</span>
+    <span class="n">desc</span> <span class="o">=</span> <span class="n">base_mol</span><span class="o">.</span><span class="n">descriptors</span><span class="o">.</span><span class="n">descriptors</span><span class="p">[</span><span class="n">pos_desc</span><span class="p">]</span>
+    <span class="c1"># print(desc, base_mol.descriptors.descriptor_names[pos_desc])</span>
+    <span class="k">if</span> <span class="n">desc</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s1">&#39;For the &quot;fatty&quot; base molecules, </span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">base_examples</span><span class="p">)</span><span class="si">}</span><span class="s1"> match the descriptor: </span><span class="si">{</span><span class="n">maccs_string</span><span class="si">}</span><span class="s1">&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Geemi Wellawatte, Andrew D White.
+      <span class="lastupdated">Last updated on True.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

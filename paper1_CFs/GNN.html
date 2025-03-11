@@ -1,0 +1,685 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMACE Paper: Graph Neural Network for HIV Inhibition &mdash; exmol  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MMACE Paper: Recurrent Neural Network for Predicting Solubility" href="Solubility-RNN.html" />
+    <link rel="prev" title="MMACE Paper: Random Forest for Blood-Brain Barrier" href="RF.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../toc.html" class="icon icon-home">
+            exmol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/Tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Schematic.html">MMACE Paper: Counterfactual Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RF.html">MMACE Paper: Random Forest for Blood-Brain Barrier</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MMACE Paper: Graph Neural Network for HIV Inhibition</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cf-explanation">CF explanation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Solubility-RNN.html">MMACE Paper: Recurrent Neural Network for Predicting Solubility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/Solubility-RNN.html">LIME paper: Recurrent Neural Network for Solubility Prediciton</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/RF-lime.html">LIME paper: Random Forest for Solubility Prediciton</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../toc.html">exmol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../toc.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">MMACE Paper: Graph Neural Network for HIV Inhibition</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ur-whitelab/exmol/blob/main/docs/source/paper1_CFs/GNN.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="mmace-paper-graph-neural-network-for-hiv-inhibition">
+<h1>MMACE Paper: Graph Neural Network for HIV Inhibition<a class="headerlink" href="#mmace-paper-graph-neural-network-for-hiv-inhibition" title="Link to this heading"></a></h1>
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import os</span>
+<span class="c1"># os.environ[&quot;CUDA_VISIBLE_DEVICES&quot;] = &quot;2&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">selfies</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">exmol</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">skunk</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdkit</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdkit.Chem.Draw</span><span class="w"> </span><span class="kn">import</span> <span class="n">rdDepictor</span>
+
+<span class="n">rdDepictor</span><span class="o">.</span><span class="n">SetPreferCoordGen</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdkit.Chem.Draw</span><span class="w"> </span><span class="kn">import</span> <span class="n">IPythonConsole</span>
+
+<span class="n">IPythonConsole</span><span class="o">.</span><span class="n">ipython_useSVG</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;notebook&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span>
+    <span class="s2">&quot;dark&quot;</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;xtick.bottom&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;ytick.left&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;xtick.color&quot;</span><span class="p">:</span> <span class="s2">&quot;#666666&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ytick.color&quot;</span><span class="p">:</span> <span class="s2">&quot;#666666&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.edgecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;#666666&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.linewidth&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="s2">&quot;figure.dpi&quot;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="n">color_cycle</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#1BBC9B&quot;</span><span class="p">,</span> <span class="s2">&quot;#F06060&quot;</span><span class="p">,</span> <span class="s2">&quot;#F3B562&quot;</span><span class="p">,</span> <span class="s2">&quot;#6e5687&quot;</span><span class="p">,</span> <span class="s2">&quot;#5C4B51&quot;</span><span class="p">]</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;axes.prop_cycle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">cycler</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color_cycle</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-03-11 15:25:16.577038: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2025-03-11 15:25:16.580352: I external/local_xla/xla/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2025-03-11 15:25:16.589261: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:477] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1741706716.604716    2118 cuda_dnn.cc:8310] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1741706716.608976    2118 cuda_blas.cc:1418] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-03-11 15:25:16.625813: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># shuffle rows and sample fom HIV dataset</span>
+<span class="n">hivdata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;HIV.csv&quot;</span><span class="p">)</span>
+<span class="c1"># REDUCED Data FOR CI</span>
+<span class="n">hivdata</span> <span class="o">=</span> <span class="n">hivdata</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">hivdata</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>smiles</th>
+      <th>activity</th>
+      <th>HIV_active</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>COc1ccc2c(c1)OCC1(C)c3cc(O)c(OCc4ccccc4)cc3OC21</td>
+      <td>CI</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Cc1cc(-c2ccc(Cl)cc2)c(C#N)c(=S)n1C1OC(CO)C(O)C...</td>
+      <td>CI</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>CNn1c(-c2ccccc2)n[nH]c1=O</td>
+      <td>CM</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>O=NN(CCCl)C(=O)NC1CCCCC1</td>
+      <td>CI</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>C=C1CCC(C)(c2ccc(CO)cc2)C1C</td>
+      <td>CI</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">gen_smiles2graph</span><span class="p">(</span><span class="n">sml</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Argument for the RD2NX function should be a valid SMILES sequence</span>
+<span class="sd">    returns: the graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">smi_canon</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">stoned</span><span class="o">.</span><span class="n">sanitize_smiles</span><span class="p">(</span><span class="n">sml</span><span class="p">)</span>
+    <span class="c1"># m = Chem.MolFromSmiles(smi_canon)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">AddHs</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">order_string</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">TRIPLE</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">AROMATIC</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()))</span>
+    <span class="c1"># nodes = np.zeros((N,100))</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">440</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="n">i</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># adj = np.zeros((N,N))</span>
+    <span class="n">adj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">440</span><span class="p">,</span> <span class="mi">440</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">GetBonds</span><span class="p">():</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">())</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">())</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">j</span><span class="o">.</span><span class="n">GetBondType</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">order_string</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">order_string</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Warning</span><span class="p">(</span><span class="s2">&quot;Ignoring bond order&quot;</span> <span class="o">+</span> <span class="n">order</span><span class="p">)</span>
+        <span class="n">adj</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">adj</span><span class="p">[</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">adj</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">440</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">adj</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GCNLayer</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementation of GCN as layer&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># constructor, which just calls super constructor</span>
+        <span class="c1"># and turns requested activation into a callable function</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GCNLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">activations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">activation</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="c1"># create trainable weights</span>
+        <span class="n">node_shape</span><span class="p">,</span> <span class="n">adj_shape</span> <span class="o">=</span> <span class="n">input_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">node_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">node_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="c1"># split input into nodes, adj</span>
+        <span class="n">nodes</span><span class="p">,</span> <span class="n">adj</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="c1"># compute degree</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">adj</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># GCN equation</span>
+        <span class="n">new_nodes</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;bi,bij,bjk,kl-&gt;bil&quot;</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">degree</span><span class="p">,</span> <span class="n">adj</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">(</span><span class="n">new_nodes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">adj</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GRLayer</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reduction layer: A GNN layer that computes average over all node features&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;GRLayer&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GRLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="n">nodes</span><span class="p">,</span> <span class="n">adj</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="n">reduction</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reduction</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ninput</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span>
+    <span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="mi">100</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">ainput</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span>
+    <span class="p">(</span>
+        <span class="kc">None</span><span class="p">,</span>
+        <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="c1"># GCN block</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">GCNLayer</span><span class="p">(</span><span class="s2">&quot;relu&quot;</span><span class="p">)([</span><span class="n">ninput</span><span class="p">,</span> <span class="n">ainput</span><span class="p">])</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">GCNLayer</span><span class="p">(</span><span class="s2">&quot;relu&quot;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">GCNLayer</span><span class="p">(</span><span class="s2">&quot;relu&quot;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">GCNLayer</span><span class="p">(</span><span class="s2">&quot;relu&quot;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="c1"># reduce to graph features</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">GRLayer</span><span class="p">()(</span><span class="n">x</span><span class="p">)</span>
+<span class="c1"># standard layers</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">256</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;sigmoid&quot;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">gcnmodel</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">(</span><span class="n">ninput</span><span class="p">,</span> <span class="n">ainput</span><span class="p">),</span> <span class="n">outputs</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+<span class="n">gcnmodel</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="s2">&quot;adam&quot;</span><span class="p">,</span>
+    <span class="n">loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">BinaryCrossentropy</span><span class="p">(</span><span class="n">from_logits</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+    <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;accuracy&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">gcnmodel</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-03-11 15:25:19.464993: E external/local_xla/xla/stream_executor/cuda/cuda_driver.cc:152] failed call to cuInit: INTERNAL: CUDA error: Failed call to cuInit: UNKNOWN ERROR (303)
+</pre></div>
+</div>
+<div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold">Model: "functional"</span>
+</pre>
+</div><div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace">┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃<span style="font-weight: bold"> Layer (type)        </span>┃<span style="font-weight: bold"> Output Shape      </span>┃<span style="font-weight: bold">    Param # </span>┃<span style="font-weight: bold"> Connected to      </span>┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ input_layer         │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">100</span>) │          <span style="color: #00af00; text-decoration-color: #00af00">0</span> │ -                 │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">InputLayer</span>)        │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ input_layer_1       │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,      │          <span style="color: #00af00; text-decoration-color: #00af00">0</span> │ -                 │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">InputLayer</span>)        │ <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>)             │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ gcn_layer           │ [(<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,     │     <span style="color: #00af00; text-decoration-color: #00af00">10,000</span> │ input_layer[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">0</span>… │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">GCNLayer</span>)          │ <span style="color: #00af00; text-decoration-color: #00af00">100</span>), (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,      │            │ input_layer_1[<span style="color: #00af00; text-decoration-color: #00af00">0</span>]… │
+│                     │ <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>)]      │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ gcn_layer_1         │ [(<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,     │     <span style="color: #00af00; text-decoration-color: #00af00">10,000</span> │ gcn_layer[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">0</span>],  │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">GCNLayer</span>)          │ <span style="color: #00af00; text-decoration-color: #00af00">100</span>), (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,      │            │ gcn_layer[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">1</span>]   │
+│                     │ <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>)]      │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ gcn_layer_2         │ [(<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,     │     <span style="color: #00af00; text-decoration-color: #00af00">10,000</span> │ gcn_layer_1[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">0</span>… │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">GCNLayer</span>)          │ <span style="color: #00af00; text-decoration-color: #00af00">100</span>), (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,      │            │ gcn_layer_1[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">1</span>] │
+│                     │ <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>)]      │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ gcn_layer_3         │ [(<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,     │     <span style="color: #00af00; text-decoration-color: #00af00">10,000</span> │ gcn_layer_2[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">0</span>… │
+│ (<span style="color: #0087ff; text-decoration-color: #0087ff">GCNLayer</span>)          │ <span style="color: #00af00; text-decoration-color: #00af00">100</span>), (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>,      │            │ gcn_layer_2[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">1</span>] │
+│                     │ <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>)]      │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ GRLayer (<span style="color: #0087ff; text-decoration-color: #0087ff">GRLayer</span>)   │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">100</span>)       │          <span style="color: #00af00; text-decoration-color: #00af00">0</span> │ gcn_layer_3[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">0</span>… │
+│                     │                   │            │ gcn_layer_3[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">1</span>] │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense (<span style="color: #0087ff; text-decoration-color: #0087ff">Dense</span>)       │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">256</span>)       │     <span style="color: #00af00; text-decoration-color: #00af00">25,856</span> │ GRLayer[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">0</span>]     │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense_1 (<span style="color: #0087ff; text-decoration-color: #0087ff">Dense</span>)     │ (<span style="color: #00d7ff; text-decoration-color: #00d7ff">None</span>, <span style="color: #00af00; text-decoration-color: #00af00">1</span>)         │        <span style="color: #00af00; text-decoration-color: #00af00">257</span> │ dense[<span style="color: #00af00; text-decoration-color: #00af00">0</span>][<span style="color: #00af00; text-decoration-color: #00af00">0</span>]       │
+└─────────────────────┴───────────────────┴────────────┴───────────────────┘
+</pre>
+</div><div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold"> Total params: </span><span style="color: #00af00; text-decoration-color: #00af00">66,113</span> (258.25 KB)
+</pre>
+</div><div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold"> Trainable params: </span><span style="color: #00af00; text-decoration-color: #00af00">66,113</span> (258.25 KB)
+</pre>
+</div><div class="output text_html"><pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-weight: bold"> Non-trainable params: </span><span style="color: #00af00; text-decoration-color: #00af00">0</span> (0.00 B)
+</pre>
+</div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">gen_data</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hivdata</span><span class="p">)):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">hivdata</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">activity</span> <span class="o">=</span> <span class="n">hivdata</span><span class="o">.</span><span class="n">HIV_active</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">activity</span>
+
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">gen_data</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="mi">100</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hivdata</span><span class="p">)</span>
+<span class="n">split</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.1</span> <span class="o">*</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">split</span><span class="p">)</span>
+<span class="n">nontest</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="n">split</span><span class="p">)</span>
+<span class="n">val_data</span><span class="p">,</span> <span class="n">train_data</span> <span class="o">=</span> <span class="n">nontest</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">split</span><span class="p">),</span> <span class="n">nontest</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="n">split</span><span class="p">)</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">class_weight</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mf">30.0</span><span class="p">}</span>  <span class="c1"># to account for class imbalance</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">gcnmodel</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">train_data</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
+    <span class="n">validation_data</span><span class="o">=</span><span class="n">val_data</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">class_weight</span><span class="o">=</span><span class="n">class_weight</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-03-11 15:25:40.772601: I tensorflow/core/framework/local_rendezvous.cc:405] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+	 [[{{node IteratorGetNext}}]]
+/opt/hostedtoolcache/Python/3.12.9/x64/lib/python3.12/site-packages/keras/src/trainers/epoch_iterator.py:151: UserWarning: Your input ran out of data; interrupting training. Make sure that your dataset or generator can generate at least `steps_per_epoch * epochs` batches. You may need to use the `.repeat()` function when building your dataset.
+  self._interrupted_warning()
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-03-11 15:25:42.805254: I tensorflow/core/framework/local_rendezvous.cc:405] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+	 [[{{node IteratorGetNext}}]]
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-03-11 15:26:03.364998: I tensorflow/core/framework/local_rendezvous.cc:405] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+	 [[{{node IteratorGetNext}}]]
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-03-11 15:26:44.178956: I tensorflow/core/framework/local_rendezvous.cc:405] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+	 [[{{node IteratorGetNext}}]]
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-03-11 15:28:06.243798: I tensorflow/core/framework/local_rendezvous.cc:405] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+	 [[{{node IteratorGetNext}}]]
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2025-03-11 15:31:09.816926: I tensorflow/core/framework/local_rendezvous.cc:405] Local rendezvous is aborting with status: OUT_OF_RANGE: End of sequence
+	 [[{{node IteratorGetNext}}]]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;training&quot;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;val_loss&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;validation&quot;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Epoch&quot;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Loss&quot;</span><span class="p">)</span>
+
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;accuracy&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;training&quot;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s2">&quot;val_accuracy&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;validation&quot;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Epoch&quot;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Accuracy&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;gnn-loss-acc.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/0357a71ec2c4806cf3f69ca64a11a08a0e2f39b975b5631073ef1780e6208161.png" src="../_images/0357a71ec2c4806cf3f69ca64a11a08a0e2f39b975b5631073ef1780e6208161.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">roc_curve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">auc</span>
+
+<span class="n">prediction</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">test_y</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">test_data</span><span class="o">.</span><span class="n">as_numpy_iterator</span><span class="p">():</span>
+    <span class="n">yhat</span> <span class="o">=</span> <span class="n">gcnmodel</span><span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">]))</span>
+    <span class="n">prediction</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yhat</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+    <span class="n">test_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+<span class="n">prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">prediction</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">test_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test_y</span><span class="p">)</span>
+
+<span class="n">fpr_keras</span><span class="p">,</span> <span class="n">tpr_keras</span><span class="p">,</span> <span class="n">thresholds_keras</span> <span class="o">=</span> <span class="n">roc_curve</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">prediction</span><span class="p">)</span>
+<span class="n">auc_keras</span> <span class="o">=</span> <span class="n">auc</span><span class="p">(</span><span class="n">fpr_keras</span><span class="p">,</span> <span class="n">tpr_keras</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr_keras</span><span class="p">,</span> <span class="n">tpr_keras</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;AUC = </span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">auc_keras</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;--&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;True Positive Rate&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;False Positive Rate&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;gnn-roc.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/cfce1566365d766e35d5598d7700c292074df01e55aa551a620474dbf0689d24.png" src="../_images/cfce1566365d766e35d5598d7700c292074df01e55aa551a620474dbf0689d24.png" />
+</div>
+</div>
+<section id="cf-explanation">
+<h2>CF explanation<a class="headerlink" href="#cf-explanation" title="Link to this heading"></a></h2>
+<p>The following example find CFs for a given molecule where the HIV activity is zero.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">predictor_function</span><span class="p">(</span><span class="n">smiles</span><span class="p">,</span> <span class="n">selfies</span><span class="p">):</span>
+    <span class="c1"># print(&#39;inut:&#39;,smiles)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sml</span> <span class="ow">in</span> <span class="n">smiles</span><span class="p">:</span>
+        <span class="n">nodes</span><span class="p">,</span> <span class="n">adj_mat</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">sml</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">gcnmodel</span><span class="p">((</span><span class="n">nodes</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">adj_mat</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">]))</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">bin_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)))</span>
+    <span class="n">target_act</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bin_labels</span> <span class="o">-</span> <span class="n">target_act</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">basic</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">get_basic_alphabet</span><span class="p">()</span>
+<span class="n">stoned_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;num_samples&quot;</span><span class="p">:</span> <span class="mi">1500</span><span class="p">,</span> <span class="s2">&quot;alphabet&quot;</span><span class="p">:</span> <span class="n">basic</span><span class="p">,</span> <span class="s2">&quot;max_mutations&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">example_base</span> <span class="o">=</span> <span class="s2">&quot;C=CCN(CC=C)C(=O)Nc1ccc(C(=O)NN=Cc2cccc(OC)c2OC)cc1&quot;</span>
+<span class="n">space</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">sample_space</span><span class="p">(</span>
+    <span class="n">example_base</span><span class="p">,</span>
+    <span class="n">predictor_function</span><span class="p">,</span>
+    <span class="n">stoned_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;num_samples&quot;</span><span class="p">:</span> <span class="mi">1500</span><span class="p">,</span> <span class="s2">&quot;alphabet&quot;</span><span class="p">:</span> <span class="n">basic</span><span class="p">,</span> <span class="s2">&quot;max_mutations&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+    <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">exps</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">cf_explain</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
+<span class="n">fkw</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)}</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_cf</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">figure_kwargs</span><span class="o">=</span><span class="n">fkw</span><span class="p">,</span> <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">450</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;gnn-simple.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">insert_svg</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">mol_fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;gnn-simple.svg&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/78030552ff0274aaea4d55529936e01bb0b9dc15d8cf86067071191990f3d112.png" src="../_images/78030552ff0274aaea4d55529936e01bb0b9dc15d8cf86067071191990f3d112.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">font</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">}</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_space</span><span class="p">(</span>
+    <span class="n">space</span><span class="p">,</span>
+    <span class="n">exps</span><span class="p">,</span>
+    <span class="n">figure_kwargs</span><span class="o">=</span><span class="n">fkw</span><span class="p">,</span>
+    <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">200</span><span class="p">),</span>
+    <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">cartoon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">rasterized</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Counterfactual&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;viridis&quot;</span><span class="p">)(</span><span class="mf">1.0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Same Class&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;viridis&quot;</span><span class="p">)(</span><span class="mf">0.0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">insert_svg</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">mol_fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;gnn-space.svg&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/ipykernel_2118/1297770767.py:14: UserWarning: Tight layout not applied. The left and right margins cannot be made large enough to accommodate all Axes decorations.
+  plt.tight_layout()
+</pre></div>
+</div>
+<img alt="../_images/a744d2627b6eb43b06db8c550ec8253c484ff650ad6a51622aa7bf2c036797c1.png" src="../_images/a744d2627b6eb43b06db8c550ec8253c484ff650ad6a51622aa7bf2c036797c1.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">exps</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">cf_explain</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">nmols</span><span class="o">=</span><span class="mi">19</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fkw</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">10</span><span class="p">)}</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_cf</span><span class="p">(</span>
+    <span class="n">exps</span><span class="p">,</span> <span class="n">figure_kwargs</span><span class="o">=</span><span class="n">fkw</span><span class="p">,</span> <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">450</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">mol_fontsize</span><span class="o">=</span><span class="mi">26</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;gnn-simple-20.png&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">insert_svg</span><span class="p">(</span><span class="n">exps</span><span class="p">,</span> <span class="n">mol_fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;gnn-simple-20.svg&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/70f0f355978813ab22c07a2bc662a33b96993d38e00768e991e94186ae62c40e.png" src="../_images/70f0f355978813ab22c07a2bc662a33b96993d38e00768e991e94186ae62c40e.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fkw</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)}</span>
+<span class="n">font</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">}</span>
+
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_space</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">figure_kwargs</span><span class="o">=</span><span class="n">fkw</span><span class="p">,</span> <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">350</span><span class="p">,</span> <span class="mi">300</span><span class="p">),</span> <span class="n">mol_fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Same Label&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;viridis&quot;</span><span class="p">)(</span><span class="mf">1.0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Counterfactual&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;viridis&quot;</span><span class="p">)(</span><span class="mf">0.0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;gnn-space.png&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">180</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/42154b3c7fc165b940784338cb4f70dfe397a59737fb38b2f394bfaa5d9acf5e.png" src="../_images/42154b3c7fc165b940784338cb4f70dfe397a59737fb38b2f394bfaa5d9acf5e.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="RF.html" class="btn btn-neutral float-left" title="MMACE Paper: Random Forest for Blood-Brain Barrier" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Solubility-RNN.html" class="btn btn-neutral float-right" title="MMACE Paper: Recurrent Neural Network for Predicting Solubility" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Geemi Wellawatte, Andrew D White.
+      <span class="lastupdated">Last updated on True.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

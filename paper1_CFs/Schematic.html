@@ -1,0 +1,183 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MMACE Paper: Counterfactual Example &mdash; exmol  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MMACE Paper: Random Forest for Blood-Brain Barrier" href="RF.html" />
+    <link rel="prev" title="Tutorial" href="../paper2_LIME/Tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../toc.html" class="icon icon-home">
+            exmol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/Tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MMACE Paper: Counterfactual Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RF.html">MMACE Paper: Random Forest for Blood-Brain Barrier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GNN.html">MMACE Paper: Graph Neural Network for HIV Inhibition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Solubility-RNN.html">MMACE Paper: Recurrent Neural Network for Predicting Solubility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/Solubility-RNN.html">LIME paper: Recurrent Neural Network for Solubility Prediciton</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/RF-lime.html">LIME paper: Random Forest for Solubility Prediciton</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../toc.html">exmol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../toc.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">MMACE Paper: Counterfactual Example</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ur-whitelab/exmol/blob/main/docs/source/paper1_CFs/Schematic.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="mmace-paper-counterfactual-example">
+<h1>MMACE Paper: Counterfactual Example<a class="headerlink" href="#mmace-paper-counterfactual-example" title="Link to this heading"></a></h1>
+<div class="cell tag_hide-input docutils container">
+<details class="hide above-input">
+<summary aria-label="Toggle hidden content">
+<span class="collapsed">Show code cell source</span>
+<span class="expanded">Hide code cell source</span>
+</summary>
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rdkit</span><span class="o">,</span><span class="w"> </span><span class="nn">rdkit.Chem</span><span class="o">,</span><span class="w"> </span><span class="nn">rdkit.Chem.Draw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdkit.Chem.Draw</span><span class="w"> </span><span class="kn">import</span> <span class="n">IPythonConsole</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mordred</span><span class="o">,</span><span class="w"> </span><span class="nn">mordred.descriptors</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">exmol</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rdkit.Chem.Draw</span><span class="w"> </span><span class="kn">import</span> <span class="n">rdDepictor</span>
+
+<span class="c1"># rdDepictor.SetPreferCoordGen(True)</span>
+
+<span class="n">IPythonConsole</span><span class="o">.</span><span class="n">ipython_useSVG</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_context</span><span class="p">(</span><span class="s2">&quot;notebook&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span>
+    <span class="s2">&quot;dark&quot;</span><span class="p">,</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;xtick.bottom&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;ytick.left&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;xtick.color&quot;</span><span class="p">:</span> <span class="s2">&quot;#666666&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ytick.color&quot;</span><span class="p">:</span> <span class="s2">&quot;#666666&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.edgecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;#666666&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.linewidth&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+        <span class="s2">&quot;figure.dpi&quot;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+<span class="n">color_cycle</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;#1BBC9B&quot;</span><span class="p">,</span> <span class="s2">&quot;#F06060&quot;</span><span class="p">,</span> <span class="s2">&quot;#F3B562&quot;</span><span class="p">,</span> <span class="s2">&quot;#6e5687&quot;</span><span class="p">,</span> <span class="s2">&quot;#5C4B51&quot;</span><span class="p">]</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;axes.prop_cycle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">cycler</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color_cycle</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</details>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s1</span> <span class="o">=</span> <span class="s2">&quot;O=C([O-])C1=CC=CC=C1C(=O)NCC2=CC=CC=C2NCCC&quot;</span>
+<span class="n">s2</span> <span class="o">=</span> <span class="s2">&quot;O=C(OC)C1=CC=CC=C1C(=O)NCC2=CC=CC=C2NCCC&quot;</span>
+<span class="n">e1</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">Example</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">is_origin</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">e2</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">Example</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Counterfactual&quot;</span><span class="p">)</span>
+<span class="n">fkw</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">)}</span>
+<span class="n">font</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;family&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span> <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">22</span><span class="p">}</span>
+
+<span class="n">mpl</span><span class="o">.</span><span class="n">rc</span><span class="p">(</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">exmol</span><span class="o">.</span><span class="n">plot_cf</span><span class="p">([</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">],</span> <span class="n">figure_kwargs</span><span class="o">=</span><span class="n">fkw</span><span class="p">,</span> <span class="n">mol_size</span><span class="o">=</span><span class="p">(</span><span class="mi">450</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">svg</span> <span class="o">=</span> <span class="n">exmol</span><span class="o">.</span><span class="n">insert_svg</span><span class="p">([</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">])</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;counterfactual.svg&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">svg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/2b8fd0ee4876ddd8161497b0c28dba177c9a8b3ec9f39f30cb8c9cc4fe7abd27.png" src="../_images/2b8fd0ee4876ddd8161497b0c28dba177c9a8b3ec9f39f30cb8c9cc4fe7abd27.png" />
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../paper2_LIME/Tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="RF.html" class="btn btn-neutral float-right" title="MMACE Paper: Random Forest for Blood-Brain Barrier" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Geemi Wellawatte, Andrew D White.
+      <span class="lastupdated">Last updated on True.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1175 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GNN Model Code &mdash; exmol  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../toc.html" class="icon icon-home">
+            exmol
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Change Log</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/Tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper1_CFs/Schematic.html">MMACE Paper: Counterfactual Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper1_CFs/RF.html">MMACE Paper: Random Forest for Blood-Brain Barrier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper1_CFs/GNN.html">MMACE Paper: Graph Neural Network for HIV Inhibition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper1_CFs/Solubility-RNN.html">MMACE Paper: Recurrent Neural Network for Predicting Solubility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/Solubility-RNN.html">LIME paper: Recurrent Neural Network for Solubility Prediciton</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../paper2_LIME/RF-lime.html">LIME paper: Random Forest for Solubility Prediciton</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../toc.html">exmol</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../toc.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">GNN Model Code</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ur-whitelab/exmol/blob/main/docs/source/paper3_Scents/GNNModelTrainingAndEvaluation.ipynb" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gnn-model-code">
+<h1>GNN Model Code<a class="headerlink" href="#gnn-model-code" title="Link to this heading"></a></h1>
+<p>GNN model using molecular scent dataset from Leffingwell Odor Datset (loaded using Pyrfume - https://pyrfume.org)</p>
+<p>Code below modified from example code given in the “Predicting DFT Energies with GNNs”, “Interpretability and Deep Learning” sections of “Deep Learning for Molecules and Materials” textbook (https://dmol.pub/applied/QM9.html)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Imports</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyrfume</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rdkit</span><span class="o">,</span><span class="w"> </span><span class="nn">rdkit.Chem</span><span class="o">,</span><span class="w"> </span><span class="nn">rdkit.Chem.rdDepictor</span><span class="o">,</span><span class="w"> </span><span class="nn">rdkit.Chem.Draw</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">haiku</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">hk</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">optax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sklearn.metrics</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">set_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Plotting style</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.font_manager</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">font_manager</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
+
+<span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span>
+    <span class="s2">&quot;https://github.com/google/fonts/raw/main/ofl/ibmplexmono/IBMPlexMono-Regular.ttf&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IBMPlexMono-Regular.ttf&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fe</span> <span class="o">=</span> <span class="n">font_manager</span><span class="o">.</span><span class="n">FontEntry</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="s2">&quot;IBMPlexMono-Regular.ttf&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;plexmono&quot;</span><span class="p">)</span>
+<span class="n">font_manager</span><span class="o">.</span><span class="n">fontManager</span><span class="o">.</span><span class="n">ttflist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fe</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;axes.facecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;#f5f4e9&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;grid.color&quot;</span><span class="p">:</span> <span class="s2">&quot;#AAAAAA&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.edgecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;#333333&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;figure.facecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;#FFFFFF&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.grid&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;axes.prop_cycle&quot;</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">cycler</span><span class="p">(</span><span class="s2">&quot;color&quot;</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Dark2</span><span class="o">.</span><span class="n">colors</span><span class="p">),</span>
+        <span class="s2">&quot;font.family&quot;</span><span class="p">:</span> <span class="n">fe</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="s2">&quot;figure.figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">3.5</span> <span class="o">/</span> <span class="mf">1.2</span><span class="p">),</span>
+        <span class="s2">&quot;ytick.left&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;xtick.bottom&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">2</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="c1"># Imports</span>
+<span class="ne">----&gt; </span><span class="mi">2</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyrfume</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;pyrfume&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<section id="model-training-related-code">
+<h2>Model Training Related Code<a class="headerlink" href="#model-training-related-code" title="Link to this heading"></a></h2>
+<p>NOTE: numEpochs is currently set to 2 &amp; the dataset is downsampled, edit code when actually training/evaluating model to use the entire dataset &amp; a larger number of empochs</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save model inputs and hyperparameters</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="n">num_Dense_layers</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">num_GNN_layers</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="c1"># NOTE: currently using reduced number of epochs, increase when training model (in paper used 138 epochs)</span>
+<span class="n">numEpochs</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="mi">2</span>  <span class="c1"># reduced value for checking notebook, edit when training/evaluating the model</span>
+<span class="p">)</span>
+<span class="n">steps_for_gradUpdate</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">graph_feat_length</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">node_feat_length</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">message_feat_length</span> <span class="o">=</span> <span class="n">node_feat_length</span>
+<span class="n">weights_stddevGNN</span> <span class="o">=</span> <span class="mf">1e-2</span>
+<span class="n">earlyStopping</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">earlyStopping_patience</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">earlyStopping_minDelta</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">regularizationStrength</span> <span class="o">=</span> <span class="mf">1e-6</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use train-test split given in Leffingwell Dataset - except add in validation set (have 70% train, 10% validation, 20% test rather than 80% train &amp; 20% test)</span>
+<span class="c1"># Load data</span>
+<span class="n">scentdata</span> <span class="o">=</span> <span class="n">pyrfume</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;leffingwell/leffingwell_data.csv&quot;</span><span class="p">,</span> <span class="n">remote</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Code used to create train, test &amp; validation sets (based on the splits given in Leffingwell Dataset)</span>
+<span class="n">testData</span> <span class="o">=</span> <span class="n">scentdata</span><span class="p">[</span><span class="n">scentdata</span><span class="p">[</span><span class="s2">&quot;labels_train/test&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">numTestData</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">testData</span><span class="p">)</span>
+
+<span class="n">trainAndValidationData</span> <span class="o">=</span> <span class="n">scentdata</span><span class="p">[</span><span class="n">scentdata</span><span class="p">[</span><span class="s2">&quot;labels_train/test&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">numTrainAndValidationData</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trainAndValidationData</span><span class="p">)</span>
+<span class="n">trainAndValidationData</span> <span class="o">=</span> <span class="n">trainAndValidationData</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+<span class="n">numMoleculesInDataset</span> <span class="o">=</span> <span class="n">numTestData</span> <span class="o">+</span> <span class="n">numTrainAndValidationData</span>
+
+<span class="c1"># randomly select indices from trainAndValidation data - validation set = 10% of entire dataset</span>
+<span class="n">numValidationData</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.10</span> <span class="o">*</span> <span class="n">numMoleculesInDataset</span><span class="p">)</span>
+<span class="n">validationIndices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+    <span class="n">a</span><span class="o">=</span><span class="n">numTrainAndValidationData</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">numValidationData</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>  <span class="c1"># https://numpy.org/doc/stable/reference/random/generated/numpy.random.choice.html</span>
+<span class="n">validationData</span> <span class="o">=</span> <span class="n">trainAndValidationData</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span>
+    <span class="n">validationIndices</span>
+<span class="p">]</span>  <span class="c1"># https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.iloc.html</span>
+<span class="n">trainData</span> <span class="o">=</span> <span class="n">trainAndValidationData</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+    <span class="n">index</span><span class="o">=</span><span class="n">validationIndices</span>
+<span class="p">)</span>  <span class="c1"># https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop.html</span>
+
+
+<span class="c1"># Use smaller set of data (just to check code does not crash)</span>
+<span class="c1"># NOTE: comment out the next 3 lines when actually training/evaluating model to use the entire dataset</span>
+<span class="n">trainData</span> <span class="o">=</span> <span class="n">trainData</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">validationData</span> <span class="o">=</span> <span class="n">validationData</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">testData</span> <span class="o">=</span> <span class="n">testData</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
+    <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>  <span class="c1"># Sample more from test set to avoid error that there is only 1 molecule with a certain scent when calculating AUROC score</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Code to generate list of all scent labels (scentClasses)</span>
+<span class="n">numMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">scentdata</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">numClasses</span> <span class="o">=</span> <span class="mi">112</span>  <span class="c1"># No odorless class</span>
+<span class="n">scentClasses</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;scentClasses.csv&quot;</span><span class="p">)</span>
+<span class="n">scentClasses</span> <span class="o">=</span> <span class="n">scentClasses</span><span class="p">[</span><span class="s2">&quot;Scent&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">moleculeScentList</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">scentdata</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+
+<span class="c1"># Generate moleculeScentList_train, moleculeScentList_test, moleculeScentList_validation</span>
+<span class="n">numTrainMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trainData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">moleculeScentList_train</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTrainMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">trainData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+
+<span class="n">numValidationMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">validationData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">moleculeScentList_validation</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numValidationMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">validationData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList_validation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+
+<span class="n">numTestMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">testData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">moleculeScentList_test</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTestMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">testData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">gen_smiles2graph</span><span class="p">(</span><span class="n">sml</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Argument for the RD2NX function should be a valid SMILES sequence</span>
+<span class="sd">    returns: the graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">sml</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">AddHs</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">order_string</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">TRIPLE</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">AROMATIC</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()))</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="n">i</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># Add in whether atom is in a ring or not for one-hot encoding</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">IsInRing</span><span class="p">():</span>
+            <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">adj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">GetBonds</span><span class="p">():</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">())</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">())</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">j</span><span class="o">.</span><span class="n">GetBondType</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">order_string</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">order_string</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Warning</span><span class="p">(</span><span class="s2">&quot;Ignoring bond order&quot;</span> <span class="o">+</span> <span class="n">order</span><span class="p">)</span>
+        <span class="n">adj</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">adj</span><span class="p">[</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">adj</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">adj</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Function that creates label vector given list of strings describing scent of molecule as input</span>
+<span class="c1"># Each index in label vector corresponds to specific scent -&gt; if output has a 0 at index i, then molecule does not have scent i</span>
+<span class="c1"># If label vector has 1 at index i, then molecule does have scent i</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">createLabelVector</span><span class="p">(</span><span class="n">scentsList</span><span class="p">):</span>
+    <span class="c1"># Find class index in label vector that each scent corresponds to &amp; update label for that molecule to 1</span>
+    <span class="n">labelVector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scentsList</span><span class="p">)):</span>
+        <span class="c1"># Find class index</span>
+        <span class="n">classIndex</span> <span class="o">=</span> <span class="n">scentClasses</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">scentsList</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="c1"># print(classIndex)</span>
+        <span class="c1"># print(scentsList[j])</span>
+        <span class="c1"># print(scentClasses[classIndex])</span>
+        <span class="c1"># Update label vector</span>
+        <span class="n">labelVector</span><span class="p">[</span><span class="n">classIndex</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">labelVector</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generateGraphsTrain</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTrainMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">trainData</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList_train</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generateGraphsValidation</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numValidationMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">validationData</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList_validation</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generateGraphsTest</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTestMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">testData</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList_test</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generateGraphs</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">scentdata</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="c1"># Check that generateGraphs() works for 1st molecule</span>
+<span class="c1"># print(gen_smiles2graph(scentdata.SMILES[0]))</span>
+<span class="c1"># print(scentdata.SENTENCE[0].split(&#39;,&#39;))</span>
+<span class="c1"># print(np.nonzero(createLabelVector(scentdata.SENTENCE[0].split(&#39;,&#39;))))</span>
+<span class="c1"># print(scentClasses[89])</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphs</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+
+<span class="n">train_set</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphsTrain</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">valid_set</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphsValidation</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">test_set</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphsTest</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_N</span> <span class="o">=</span> <span class="n">numTrainMolecules</span>
+<span class="n">valid_N</span> <span class="o">=</span> <span class="n">numValidationMolecules</span>
+<span class="n">test_N</span> <span class="o">=</span> <span class="n">numTestMolecules</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GNNLayer</span><span class="p">(</span><span class="n">hk</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="c1"># split input into nodes, edges &amp; features</span>
+        <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="c1"># Nodes is of shape (N, Nf) --&gt; N = # atoms, Nf = node_feature_length</span>
+        <span class="c1"># Edges is of shape (N,N) (adjacency matrix)</span>
+        <span class="c1"># Features is of shape (Gf) --&gt; Gf = graph_feature_length</span>
+
+        <span class="n">graph_feature_len</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># graph_feature_len (Gf)</span>
+        <span class="n">node_feature_len</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># node_feature_len (Nf)</span>
+        <span class="n">message_feature_len</span> <span class="o">=</span> <span class="n">message_feat_length</span>  <span class="c1"># message_feature_length (Mf)</span>
+
+        <span class="c1"># Initialize weights</span>
+        <span class="n">w_init</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">RandomNormal</span><span class="p">(</span><span class="n">stddev</span><span class="o">=</span><span class="n">weights_stddevGNN</span><span class="p">)</span>
+
+        <span class="c1"># we is of shape (Nf,Mf)</span>
+        <span class="n">we</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;we&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">node_feature_len</span><span class="p">,</span> <span class="n">message_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># b is of shape (Mf)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">message_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span><span class="p">)</span>
+
+        <span class="c1"># wv is of shape (Mf,Nf)</span>
+        <span class="n">wv</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;wv&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">message_feature_len</span><span class="p">,</span> <span class="n">node_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># wu is of shape (Nf,Gf)</span>
+        <span class="n">wu</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;wu&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">node_feature_len</span><span class="p">,</span> <span class="n">graph_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># make nodes be N x N x Nf so we can just multiply directly (N = number of atoms)</span>
+        <span class="c1"># ek is now shaped N x N x Mf</span>
+        <span class="n">ek</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span>
+            <span class="n">b</span>
+            <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">@</span> <span class="n">we</span>
+            <span class="o">*</span> <span class="n">edges</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Uncomment lines below to update edges (also edit return line so new_edges is returned)</span>
+        <span class="c1"># Update edges, use jnp.any to have new_edges be of shape N x N</span>
+        <span class="c1"># new_edges = jnp.any(ek, axis=-1)</span>
+
+        <span class="c1"># Normalize over edge features w/layer normalization</span>
+        <span class="c1"># new_edges = hk.LayerNorm(axis=[0,1], create_scale=False, create_offset=False, eps=1e-05)(new_edges)</span>
+
+        <span class="c1"># take sum over neighbors to get ebar shape = Nf x Mf</span>
+        <span class="n">ebar</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ek</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># dense layer for new nodes to get new_nodes shape = N x Nf</span>
+        <span class="n">new_nodes</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span><span class="n">ebar</span> <span class="o">@</span> <span class="n">wv</span><span class="p">)</span> <span class="o">+</span> <span class="n">nodes</span>  <span class="c1"># Use leaky ReLU</span>
+
+        <span class="c1"># Normalize over node features w/layer normalization</span>
+        <span class="n">new_nodes</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span>
+            <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">create_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">create_offset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span>
+        <span class="p">)(</span><span class="n">new_nodes</span><span class="p">)</span>
+
+        <span class="c1"># sum over nodes to get shape features so global_node_features shape = Nf</span>
+        <span class="n">global_node_features</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">new_nodes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># dense layer for new features so new_features shape = Gf</span>
+        <span class="n">new_features</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span><span class="n">global_node_features</span> <span class="o">@</span> <span class="n">wu</span><span class="p">)</span> <span class="o">+</span> <span class="n">features</span>
+        <span class="p">)</span>  <span class="c1"># Use leaky ReLU for activation</span>
+
+        <span class="k">return</span> <span class="n">new_nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">new_features</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">model_fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">graph_feat_length</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">features</span>
+
+    <span class="c1"># NOTE: If edited num_GNN_layers, need to edit code below (increase or decrease # times have x = GNNLayer(...))</span>
+    <span class="c1"># 4 GNN layers</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># 2 dense layers</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)(</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logits</span>  <span class="c1"># Model now returns logits</span>
+
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">without_apply_rng</span><span class="p">(</span><span class="n">hk</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">model_fn</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># from https://dmol.pub/dl/xai.html</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cross_entropy_logits</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">jnp</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+        <span class="n">jnp</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-</span> <span class="n">logits</span> <span class="o">*</span> <span class="n">y</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">jnp</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">logits</span><span class="p">)))</span>
+    <span class="p">)</span>
+
+
+<span class="c1"># Use loss function below if model outputs logits &amp; do not want to use L2 regularization</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">loss_fn_logits</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cross_entropy_logits</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+
+<span class="c1"># Use loss function below if model outputs logits &amp; want to include L2 regularization</span>
+<span class="c1"># Code to compute L2 regularization based on that in the &quot;MLP on MNIST&quot; Example on the Haiku Github repository (https://github.com/deepmind/dm-haiku/blob/main/examples/mnist.py)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">loss_fn_logits_reg</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="n">l2_lossTerm</span> <span class="o">=</span> <span class="n">regularizationStrength</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">jnp</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_leaves</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">loss_fn_logits</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">logits</span> <span class="o">+</span> <span class="n">l2_lossTerm</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">sampleData</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">dataVal</span> <span class="ow">in</span> <span class="n">sampleData</span><span class="p">:</span>
+    <span class="p">(</span><span class="n">nodes_i</span><span class="p">,</span> <span class="n">edges_i</span><span class="p">),</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">dataVal</span>
+<span class="n">nodes_i</span> <span class="o">=</span> <span class="n">nodes_i</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">edges_i</span> <span class="o">=</span> <span class="n">edges_i</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+<span class="n">yi</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">xi</span> <span class="o">=</span> <span class="p">(</span><span class="n">nodes_i</span><span class="p">,</span> <span class="n">edges_i</span><span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">xi</span><span class="p">)</span>
+
+<span class="n">opt_init</span><span class="p">,</span> <span class="n">opt_update</span> <span class="o">=</span> <span class="n">optax</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+    <span class="n">optax</span><span class="o">.</span><span class="n">apply_every</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">steps_for_gradUpdate</span><span class="p">),</span> <span class="n">optax</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span><span class="n">learning_rate</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">opt_state</span> <span class="o">=</span> <span class="n">opt_init</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+
+<span class="nd">@jax</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">opt_state</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+    <span class="n">value</span><span class="p">,</span> <span class="n">grads</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">value_and_grad</span><span class="p">(</span><span class="n">loss_fn_logits_reg</span><span class="p">)(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">updates</span><span class="p">,</span> <span class="n">opt_state</span> <span class="o">=</span> <span class="n">opt_update</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">opt_state</span><span class="p">)</span>
+    <span class="n">updated_params</span> <span class="o">=</span> <span class="n">optax</span><span class="o">.</span><span class="n">apply_updates</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">updates</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="n">opt_state</span><span class="p">,</span> <span class="n">updated_params</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Train model</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="n">numEpochs</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Number of Epochs: </span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">, learning rate: </span><span class="si">{</span><span class="n">learning_rate</span><span class="si">}</span><span class="s2">, node_feature_len: </span><span class="si">{</span><span class="n">node_feat_length</span><span class="si">}</span><span class="s2">, graph_feature_len: </span><span class="si">{</span><span class="n">graph_feat_length</span><span class="si">}</span><span class="s2">, message_feature_length: </span><span class="si">{</span><span class="n">message_feat_length</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">num_Dense_layers</span><span class="si">}</span><span class="s2"> Dense, </span><span class="si">{</span><span class="n">num_GNN_layers</span><span class="si">}</span><span class="s2"> GNN layers&quot;</span>
+<span class="p">)</span>
+<span class="n">val_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
+<span class="n">train_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
+
+<span class="c1"># early stopping counter</span>
+<span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">epochStoppedAt</span> <span class="o">=</span> <span class="n">epochs</span>
+
+<span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">counter</span> <span class="o">==</span> <span class="n">earlyStopping_patience</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Early stopping, stopped at Epoch </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> (Note 1st epoch = 0)&quot;</span><span class="p">)</span>
+        <span class="n">epochStoppedAt</span> <span class="o">=</span> <span class="n">e</span>
+        <span class="k">break</span>  <span class="c1"># Early stopping</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elementInTrainSet</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_set</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">ni</span><span class="p">,</span> <span class="n">ei</span><span class="p">),</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">elementInTrainSet</span>
+        <span class="n">ni</span> <span class="o">=</span> <span class="n">ni</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">ei</span> <span class="o">=</span> <span class="n">ei</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">yi</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="n">ni</span><span class="p">,</span> <span class="n">ei</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">opt_state</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">update</span><span class="p">(</span><span class="n">opt_state</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="n">train_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">+=</span> <span class="n">value</span>
+
+    <span class="n">train_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">/</span> <span class="n">train_N</span>  <span class="c1"># Take average loss over all molecules</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training Loss, Epoch </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">train_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">valid_set</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">n_val</span><span class="p">,</span> <span class="n">e_val</span><span class="p">),</span> <span class="n">y</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="n">n_val</span> <span class="o">=</span> <span class="n">n_val</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">e_val</span> <span class="o">=</span> <span class="n">e_val</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">n_val</span><span class="p">,</span> <span class="n">e_val</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn_logits_reg</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">val_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">+=</span> <span class="n">loss</span>
+
+    <span class="n">val_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">=</span> <span class="n">val_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="o">/</span> <span class="n">valid_N</span>  <span class="c1"># Take average loss over all molecules</span>
+
+    <span class="c1"># Check if have improvement/increase in validation loss (early stopping)</span>
+    <span class="k">if</span> <span class="n">e</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">lossDiff</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">prevValidLoss</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span>
+        <span class="p">)</span>  <span class="c1"># If have improvement, prevValidLoss &gt; val_loss[e]</span>
+        <span class="k">if</span> <span class="n">lossDiff</span> <span class="o">&lt;</span> <span class="n">earlyStopping_minDelta</span><span class="p">:</span>
+            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">prevValidLoss</span> <span class="o">=</span> <span class="n">val_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">, Validation Loss: </span><span class="si">{</span><span class="n">val_loss</span><span class="p">[</span><span class="n">e</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="n">opt_params</span> <span class="o">=</span> <span class="n">params</span>
+<span class="c1"># Save optimal parameters</span>
+<span class="n">opt_params_flattened</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">tree_util</span><span class="o">.</span><span class="n">tree_flatten</span><span class="p">(</span><span class="n">opt_params</span><span class="p">)</span>
+<span class="c1"># fileName = f&#39;optParams_{epochs}Epochs.npy&#39;</span>
+<span class="c1"># np.save(fileName, opt_params_flattened[0])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-evaluation-related-code">
+<h2>Model Evaluation Related Code<a class="headerlink" href="#model-evaluation-related-code" title="Link to this heading"></a></h2>
+<section id="run-2-cells-below-if-reading-model-parameters-from-file-have-not-run-earlier-cells-in-the-notebook">
+<h3>Run 2 cells below if reading model parameters from file &amp; have not run earlier cells in the notebook<a class="headerlink" href="#run-2-cells-below-if-reading-model-parameters-from-file-have-not-run-earlier-cells-in-the-notebook" title="Link to this heading"></a></h3>
+<p>NOTE: the dataset is downsampled, edit code when actually training/evaluating model to use the entire dataset</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NOTE: If reading model parameters from file (rather than computing metrics directly after training), run 2 cells below</span>
+
+<span class="c1"># Parameters for GNN model (parameters being read in)</span>
+<span class="n">node_feat_length</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">message_feat_length</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">graph_feat_length</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">weights_stddevGNN</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+<span class="c1"># Use train-test split given in Leffingwell Dataset - except add in validation set (have 70% train, 10% validation, 20% test rather than 80% train &amp; 20% test)</span>
+<span class="c1"># Load data</span>
+<span class="n">scentdata</span> <span class="o">=</span> <span class="n">pyrfume</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;leffingwell/leffingwell_data.csv&quot;</span><span class="p">,</span> <span class="n">remote</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Code used to create train, test &amp; validation sets (based on the splits given in Leffingwell Dataset) &amp; write to csv file</span>
+<span class="n">testData</span> <span class="o">=</span> <span class="n">scentdata</span><span class="p">[</span><span class="n">scentdata</span><span class="p">[</span><span class="s2">&quot;labels_train/test&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">numTestData</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">testData</span><span class="p">)</span>
+
+<span class="n">trainAndValidationData</span> <span class="o">=</span> <span class="n">scentdata</span><span class="p">[</span><span class="n">scentdata</span><span class="p">[</span><span class="s2">&quot;labels_train/test&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">numTrainAndValidationData</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trainAndValidationData</span><span class="p">)</span>
+<span class="n">trainAndValidationData</span> <span class="o">=</span> <span class="n">trainAndValidationData</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+<span class="n">numMoleculesInDataset</span> <span class="o">=</span> <span class="n">numTestData</span> <span class="o">+</span> <span class="n">numTrainAndValidationData</span>
+
+<span class="c1"># randomly select indices from trainAndValidation data - validation set = 10% of entire dataset</span>
+<span class="n">numValidationData</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.10</span> <span class="o">*</span> <span class="n">numMoleculesInDataset</span><span class="p">)</span>
+<span class="n">validationIndices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+    <span class="n">a</span><span class="o">=</span><span class="n">numTrainAndValidationData</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">numValidationData</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>  <span class="c1"># https://numpy.org/doc/stable/reference/random/generated/numpy.random.choice.html</span>
+<span class="n">validationData</span> <span class="o">=</span> <span class="n">trainAndValidationData</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span>
+    <span class="n">validationIndices</span>
+<span class="p">]</span>  <span class="c1"># https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.iloc.html</span>
+<span class="n">trainData</span> <span class="o">=</span> <span class="n">trainAndValidationData</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+    <span class="n">index</span><span class="o">=</span><span class="n">validationIndices</span>
+<span class="p">)</span>  <span class="c1"># https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop.html</span>
+
+
+<span class="c1"># Use smaller set of data (just to check code does not crash)</span>
+<span class="c1"># NOTE: comment out the next 3 lines when actually training/evaluating model to use the entire dataset</span>
+<span class="n">trainData</span> <span class="o">=</span> <span class="n">trainData</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">validationData</span> <span class="o">=</span> <span class="n">validationData</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># testData = testData.sample(frac=0.8, random_state=0).reset_index(</span>
+<span class="c1">#    drop=True</span>
+<span class="c1"># )  # Sample more from test set to avoid error that there is only 1 molecule with a certain scent when calculating AUROC score</span>
+
+<span class="c1"># Code to generate list of all scent labels (scentClasses)</span>
+<span class="n">numMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">scentdata</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">numClasses</span> <span class="o">=</span> <span class="mi">112</span>  <span class="c1"># No odorless class</span>
+<span class="n">scentClasses</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;scentClasses.csv&quot;</span><span class="p">)</span>
+<span class="n">scentClasses</span> <span class="o">=</span> <span class="n">scentClasses</span><span class="p">[</span><span class="s2">&quot;Scent&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">moleculeScentList</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">scentdata</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+
+<span class="c1"># Generate moleculeScentList_train, moleculeScentList_test, moleculeScentList_validation</span>
+<span class="n">numTrainMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trainData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">moleculeScentList_train</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTrainMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">trainData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+
+<span class="n">numValidationMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">validationData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">moleculeScentList_validation</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numValidationMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">validationData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList_validation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+
+<span class="n">numTestMolecules</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">testData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">)</span>
+<span class="n">moleculeScentList_test</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTestMolecules</span><span class="p">):</span>
+    <span class="n">scentString</span> <span class="o">=</span> <span class="n">testData</span><span class="o">.</span><span class="n">odor_labels_filtered</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">scentString</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">scentList</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;odorless&quot;</span> <span class="ow">in</span> <span class="n">scentList</span><span class="p">:</span>
+        <span class="n">scentList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;odorless&quot;</span><span class="p">)</span>
+    <span class="n">moleculeScentList_test</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentList</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">gen_smiles2graph</span><span class="p">(</span><span class="n">sml</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Argument for the RD2NX function should be a valid SMILES sequence</span>
+<span class="sd">    returns: the graph</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmiles</span><span class="p">(</span><span class="n">sml</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">AddHs</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">order_string</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">TRIPLE</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">rdkit</span><span class="o">.</span><span class="n">Chem</span><span class="o">.</span><span class="n">rdchem</span><span class="o">.</span><span class="n">BondType</span><span class="o">.</span><span class="n">AROMATIC</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">()))</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">GetAtoms</span><span class="p">():</span>
+        <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="n">i</span><span class="o">.</span><span class="n">GetAtomicNum</span><span class="p">()]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># Add in whether atom is in a ring or not for one-hot encoding</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">IsInRing</span><span class="p">():</span>
+            <span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="o">.</span><span class="n">GetIdx</span><span class="p">(),</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">adj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">GetBonds</span><span class="p">():</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">())</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">GetBeginAtomIdx</span><span class="p">(),</span> <span class="n">j</span><span class="o">.</span><span class="n">GetEndAtomIdx</span><span class="p">())</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">j</span><span class="o">.</span><span class="n">GetBondType</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">order_string</span><span class="p">:</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">order_string</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Warning</span><span class="p">(</span><span class="s2">&quot;Ignoring bond order&quot;</span> <span class="o">+</span> <span class="n">order</span><span class="p">)</span>
+        <span class="n">adj</span><span class="p">[</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">adj</span><span class="p">[</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">adj</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">adj</span>
+
+
+<span class="c1"># Function that creates label vector given list of strings describing scent of molecule as input</span>
+<span class="c1"># Each index in label vector corresponds to specific scent -&gt; if output has a 0 at index i, then molecule does not have scent i</span>
+<span class="c1"># If label vector has 1 at index i, then molecule does have scent i</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">createLabelVector</span><span class="p">(</span><span class="n">scentsList</span><span class="p">):</span>
+    <span class="c1"># Find class index in label vector that each scent corresponds to &amp; update label for that molecule to 1</span>
+    <span class="n">labelVector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scentsList</span><span class="p">)):</span>
+        <span class="c1"># Find class index</span>
+        <span class="n">classIndex</span> <span class="o">=</span> <span class="n">scentClasses</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">scentsList</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="c1"># print(classIndex)</span>
+        <span class="c1"># print(scentsList[j])</span>
+        <span class="c1"># print(scentClasses[classIndex])</span>
+        <span class="c1"># Update label vector</span>
+        <span class="n">labelVector</span><span class="p">[</span><span class="n">classIndex</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">labelVector</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generateGraphsTrain</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTrainMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">trainData</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList_train</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generateGraphsValidation</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numValidationMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">validationData</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList_validation</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generateGraphsTest</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTestMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">testData</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList_test</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generateGraphs</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numMolecules</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">gen_smiles2graph</span><span class="p">(</span><span class="n">scentdata</span><span class="o">.</span><span class="n">smiles</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">createLabelVector</span><span class="p">(</span><span class="n">moleculeScentList</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">yield</span> <span class="n">graph</span><span class="p">,</span> <span class="n">labels</span>
+
+
+<span class="c1"># Get graph data for training, testing &amp; validation sets</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphs</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+
+<span class="n">train_set</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphsTrain</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">valid_set</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphsValidation</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">test_set</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_generator</span><span class="p">(</span>
+    <span class="n">generateGraphsTest</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="o">=</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="n">node_feat_length</span><span class="p">]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">])),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="kc">None</span><span class="p">]),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">train_N</span> <span class="o">=</span> <span class="n">numTrainMolecules</span>
+<span class="n">valid_N</span> <span class="o">=</span> <span class="n">numValidationMolecules</span>
+<span class="n">test_N</span> <span class="o">=</span> <span class="n">numTestMolecules</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GNNLayer</span><span class="p">(</span><span class="n">hk</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="c1"># split input into nodes, edges &amp; features</span>
+        <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="c1"># Nodes is of shape (N, Nf) --&gt; N = # atoms, Nf = node_feature_length</span>
+        <span class="c1"># Edges is of shape (N,N) (adjacency matrix)</span>
+        <span class="c1"># Features is of shape (Gf) --&gt; Gf = graph_feature_length</span>
+
+        <span class="n">graph_feature_len</span> <span class="o">=</span> <span class="n">features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># graph_feature_len (Gf)</span>
+        <span class="n">node_feature_len</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># node_feature_len (Nf)</span>
+        <span class="n">message_feature_len</span> <span class="o">=</span> <span class="n">message_feat_length</span>  <span class="c1"># message_feature_length (Mf)</span>
+
+        <span class="c1"># Initialize weights</span>
+        <span class="n">w_init</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">RandomNormal</span><span class="p">(</span><span class="n">stddev</span><span class="o">=</span><span class="n">weights_stddevGNN</span><span class="p">)</span>
+
+        <span class="c1"># we is of shape (Nf,Mf)</span>
+        <span class="n">we</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;we&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">node_feature_len</span><span class="p">,</span> <span class="n">message_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># b is of shape (Mf)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">message_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span><span class="p">)</span>
+
+        <span class="c1"># wv is of shape (Mf,Nf)</span>
+        <span class="n">wv</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;wv&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">message_feature_len</span><span class="p">,</span> <span class="n">node_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># wu is of shape (Nf,Gf)</span>
+        <span class="n">wu</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">get_parameter</span><span class="p">(</span>
+            <span class="s2">&quot;wu&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">node_feature_len</span><span class="p">,</span> <span class="n">graph_feature_len</span><span class="p">],</span> <span class="n">init</span><span class="o">=</span><span class="n">w_init</span>
+        <span class="p">)</span>
+
+        <span class="c1"># make nodes be N x N x Nf so we can just multiply directly (N = number of atoms)</span>
+        <span class="c1"># ek is now shaped N x N x Mf</span>
+        <span class="n">ek</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span>
+            <span class="n">b</span>
+            <span class="o">+</span> <span class="n">jnp</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">jnp</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">nodes</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">@</span> <span class="n">we</span>
+            <span class="o">*</span> <span class="n">edges</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Uncomment lines below to update edges (also edit return line so new_edges is returned)</span>
+        <span class="c1"># Update edges, use jnp.any to have new_edges be of shape N x N</span>
+        <span class="c1"># new_edges = jnp.any(ek, axis=-1)</span>
+
+        <span class="c1"># Normalize over edge features w/layer normalization</span>
+        <span class="c1"># new_edges = hk.LayerNorm(axis=[0,1], create_scale=False, create_offset=False, eps=1e-05)(new_edges)</span>
+
+        <span class="c1"># take sum over neighbors to get ebar shape = Nf x Mf</span>
+        <span class="n">ebar</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ek</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># dense layer for new nodes to get new_nodes shape = N x Nf</span>
+        <span class="n">new_nodes</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span><span class="n">ebar</span> <span class="o">@</span> <span class="n">wv</span><span class="p">)</span> <span class="o">+</span> <span class="n">nodes</span>  <span class="c1"># Use leaky ReLU</span>
+
+        <span class="c1"># Normalize over node features w/layer normalization</span>
+        <span class="n">new_nodes</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span>
+            <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">create_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">create_offset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span>
+        <span class="p">)(</span><span class="n">new_nodes</span><span class="p">)</span>
+
+        <span class="c1"># sum over nodes to get shape features so global_node_features shape = Nf</span>
+        <span class="n">global_node_features</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">new_nodes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># dense layer for new features so new_features shape = Gf</span>
+        <span class="n">new_features</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">leaky_relu</span><span class="p">(</span><span class="n">global_node_features</span> <span class="o">@</span> <span class="n">wu</span><span class="p">)</span> <span class="o">+</span> <span class="n">features</span>
+        <span class="p">)</span>  <span class="c1"># Use leaky ReLU for activation</span>
+
+        <span class="c1"># just return features for ease of use</span>
+        <span class="k">return</span> <span class="n">new_nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">new_features</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">model_fn</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">graph_feat_length</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">features</span>
+
+    <span class="c1"># NOTE: If edited num_GNN_layers, need to edit code below (increase or decrease # times have x = GNNLayer(...))</span>
+    <span class="c1"># 4 GNN layers</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">GNNLayer</span><span class="p">(</span><span class="n">output_size</span><span class="o">=</span><span class="n">graph_feat_length</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># 2 dense layers</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)(</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># logits = jax.nn.relu(logits) #ReLU activation between dense layer</span>
+    <span class="n">logits</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">numClasses</span><span class="p">)(</span><span class="n">logits</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logits</span>  <span class="c1"># Model now returns logits</span>
+
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">hk</span><span class="o">.</span><span class="n">without_apply_rng</span><span class="p">(</span><span class="n">hk</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">model_fn</span><span class="p">))</span>
+
+<span class="c1"># Initialize model</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">PRNGKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">sampleData</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">dataVal</span> <span class="ow">in</span> <span class="n">sampleData</span><span class="p">:</span>  <span class="c1"># Look into later how to get larger set</span>
+    <span class="p">(</span><span class="n">nodes_i</span><span class="p">,</span> <span class="n">edges_i</span><span class="p">),</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">dataVal</span>
+<span class="n">nodes_i</span> <span class="o">=</span> <span class="n">nodes_i</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">edges_i</span> <span class="o">=</span> <span class="n">edges_i</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+<span class="n">yi</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">xi</span> <span class="o">=</span> <span class="p">(</span><span class="n">nodes_i</span><span class="p">,</span> <span class="n">edges_i</span><span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">xi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load optimal parameters for GNN model</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Edit fileName to change parameters being loaded&quot;</span><span class="p">)</span>
+<span class="n">fileName</span> <span class="o">=</span> <span class="s2">&quot;optParams_dry-waterfall-17.npy&quot;</span>  <span class="c1"># Currently optimal parameters, edit when get better model</span>
+<span class="n">paramsArr</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fileName</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">opt_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;gnn_layer&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="s2">&quot;we&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="s2">&quot;wu&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+        <span class="s2">&quot;wv&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;gnn_layer_1&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+        <span class="s2">&quot;we&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span>
+        <span class="s2">&quot;wu&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span>
+        <span class="s2">&quot;wv&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;gnn_layer_2&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span>
+        <span class="s2">&quot;we&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">9</span><span class="p">],</span>
+        <span class="s2">&quot;wu&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span>
+        <span class="s2">&quot;wv&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;gnn_layer_3&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">12</span><span class="p">],</span>
+        <span class="s2">&quot;we&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">13</span><span class="p">],</span>
+        <span class="s2">&quot;wu&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">14</span><span class="p">],</span>
+        <span class="s2">&quot;wv&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">15</span><span class="p">],</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;linear&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">16</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">17</span><span class="p">]},</span>
+    <span class="s2">&quot;linear_1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">18</span><span class="p">],</span> <span class="s2">&quot;w&quot;</span><span class="p">:</span> <span class="n">paramsArr</span><span class="p">[</span><span class="mi">19</span><span class="p">]},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="calculate-auroc-values-on-test-set">
+<h3>Calculate AUROC values on test set<a class="headerlink" href="#calculate-auroc-values-on-test-set" title="Link to this heading"></a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute AUROC &amp; Create ROC curve for each scent class - uses scikit-learn</span>
+<span class="c1"># https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html</span>
+
+<span class="n">test_yhat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">test_N</span><span class="p">,</span> <span class="n">numClasses</span><span class="p">)</span>
+<span class="p">)</span>  <span class="c1"># create empty array to store predictions on test set</span>
+<span class="n">test_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">test_N</span><span class="p">,</span> <span class="n">numClasses</span><span class="p">))</span>
+
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">testVal</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">test_set</span><span class="p">):</span>
+    <span class="p">(</span><span class="n">nodes_i</span><span class="p">,</span> <span class="n">edges_i</span><span class="p">),</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">testVal</span>
+    <span class="n">nodes_i</span> <span class="o">=</span> <span class="n">nodes_i</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">edges_i</span> <span class="o">=</span> <span class="n">edges_i</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">yi</span> <span class="o">=</span> <span class="n">yi</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">xi</span> <span class="o">=</span> <span class="n">nodes_i</span><span class="p">,</span> <span class="n">edges_i</span>
+    <span class="n">test_yhat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">opt_params</span><span class="p">,</span> <span class="n">xi</span><span class="p">))</span>
+    <span class="n">test_y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">yi</span>
+
+<span class="c1"># Shape of test_yhat and test_y should be (n_samples, n_classes)</span>
+<span class="c1"># print(f&#39;Shape of test_y: {np.shape(test_y)} and test_yhat: {np.shape(test_yhat)}&#39;)</span>
+
+<span class="n">scentClasses_testSet</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">aurocs_allClasses</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numClasses</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">test_y</span><span class="p">[:,</span> <span class="n">c</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Test set does not have any molecules with scent </span><span class="si">{</span><span class="n">scentClasses</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">##Uncomment lines below to create ROC curves</span>
+        <span class="c1"># fpr, tpr, thresholds = sklearn.metrics.roc_curve(y_true = test_y[:,c], y_score = test_yhat[:,c])</span>
+        <span class="c1"># plt.plot(fpr, tpr, &#39;-o&#39;, label=&#39;Trained Model&#39;)</span>
+        <span class="c1"># plt.plot([0,1], [0, 1], label=&#39;Naive Classifier&#39;)</span>
+        <span class="c1"># plt.ylabel(&#39;True Positive Rate&#39;)</span>
+        <span class="c1"># plt.xlabel(&#39;False Positive Rate&#39;)</span>
+        <span class="c1"># plt.title(f&#39;ROC Curve for {scentClasses[c]}&#39;)</span>
+        <span class="c1"># plt.legend()</span>
+        <span class="c1"># plt.show()</span>
+        <span class="c1"># plt.savefig(f&#39;GNN_ROC_Curve_{scentClasses[c]}.jpg&#39;)</span>
+        <span class="c1"># plt.close()</span>
+        <span class="n">scentClasses_testSet</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scentClasses</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+        <span class="n">auroc</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">roc_auc_score</span><span class="p">(</span>
+            <span class="n">y_true</span><span class="o">=</span><span class="n">test_y</span><span class="p">[:,</span> <span class="n">c</span><span class="p">],</span> <span class="n">y_score</span><span class="o">=</span><span class="n">test_yhat</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">aurocs_allClasses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">auroc</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;AUROC for scent </span><span class="si">{</span><span class="n">scentClasses</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">auroc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Write AUROC results to csv file</span>
+<span class="c1"># aurocTable = pd.DataFrame({&#39;Scent&#39;: scentClasses_testSet,&#39;AUROC&#39;: aurocs_allClasses})</span>
+<span class="c1"># csvFileName  = f&#39;AurocTable_{runName}.csv&#39;</span>
+<span class="c1"># aurocTable.to_csv(csvFileName,index=False)</span>
+
+<span class="c1"># Print Mean AUROC</span>
+<span class="n">mean_AUROC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">aurocs_allClasses</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean AUROC: </span><span class="si">{</span><span class="n">mean_AUROC</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check that calculating AUROC for each scent class using method above &amp; taking the mean of it is equivalent to using average=macro parameter</span>
+<span class="n">auroc_sklearnAverageMacro</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">roc_auc_score</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="o">=</span><span class="n">test_y</span><span class="p">,</span> <span class="n">y_score</span><span class="o">=</span><span class="n">test_yhat</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">&quot;macro&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mean_AUROC</span> <span class="o">==</span> <span class="n">auroc_sklearnAverageMacro</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;macro-average AUROC: </span><span class="si">{</span><span class="n">auroc_sklearnAverageMacro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Calculate micro-average AUROC</span>
+<span class="n">auroc_sklearnAverageMicro</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">roc_auc_score</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="o">=</span><span class="n">test_y</span><span class="p">,</span> <span class="n">y_score</span><span class="o">=</span><span class="n">test_yhat</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">&quot;micro&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;micro-average AUROC: </span><span class="si">{</span><span class="n">auroc_sklearnAverageMicro</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Calculate weighted AUROC (each class weighted by how many times it occurs in the true data sample)</span>
+<span class="n">auroc_sklearnAverageWeighted</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">roc_auc_score</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="o">=</span><span class="n">test_y</span><span class="p">,</span> <span class="n">y_score</span><span class="o">=</span><span class="n">test_yhat</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">&quot;weighted&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;weighted-average AUROC: </span><span class="si">{</span><span class="n">auroc_sklearnAverageWeighted</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Calculate median AUROC (find median value of AUROC for each scent class)</span>
+<span class="n">auroc_median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">aurocs_allClasses</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;median AUROC: </span><span class="si">{</span><span class="n">auroc_median</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Print out values for each AUROC score value as pandas table</span>
+<span class="n">tableOfAUROCValues</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">tableOfAUROCValues</span><span class="p">[</span><span class="s2">&quot;macro-average AUROC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">auroc_sklearnAverageMacro</span><span class="p">]</span>
+<span class="n">tableOfAUROCValues</span><span class="p">[</span><span class="s2">&quot;micro-average AUROC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">auroc_sklearnAverageMicro</span><span class="p">]</span>
+<span class="n">tableOfAUROCValues</span><span class="p">[</span><span class="s2">&quot;weighted-average AUROC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">auroc_sklearnAverageWeighted</span><span class="p">]</span>
+<span class="n">tableOfAUROCValues</span><span class="p">[</span><span class="s2">&quot;median AUROC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">auroc_median</span><span class="p">]</span>
+<span class="n">tableOfAUROCValues</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Geemi Wellawatte, Andrew D White.
+      <span class="lastupdated">Last updated on True.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
